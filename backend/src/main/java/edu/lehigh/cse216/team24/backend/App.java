@@ -47,8 +47,7 @@ public class App {
     public static final int DEFAULT_PORT_WEBSERVER = 8080;
 
     /** Google Oauth Client ID from environement variable */
-    // private static final String CLIENT_ID = System.getenv("GOOGLE_CLIENT_ID");
-    private static final String CLIENT_ID_WEB = "209952242135-jpmrhec8pqu40o26hh70r73lfq9btp7k.apps.googleusercontent.com";
+    private static final String CLIENT_ID_WEB = System.getenv("CLIENT_ID_WEB");
     private static final String CLIENT_ID_MOBILE = "209952242135-g8lkq6vpma3uit0pbekbu7qefjr6fpsa.apps.googleusercontent.com";
 
     /** User Sessions. string will be email and int is session ID number */
@@ -68,8 +67,7 @@ public class App {
     // Global key for the userSession table that is cached
     private static final String memcache_key = "userSessionHashTable";
 
-    
-    /** 
+    /**
      * @return MemcachedClient
      */
     // initializer method for the cache

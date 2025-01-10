@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 document.addEventListener('DOMContentLoaded', function () {
-    var baseUrl = 'http://localhost:8000';
+    var baseUrl = 'https://team-dog.dokku.cse.lehigh.edu';
     var feedContainer = document.querySelector('.feedContainer');
     var userId = getQueryParam('user_id');
     /**
@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 case 1:
                     response = _a.sent();
                     if (response.ok) {
-                        window.location.href = 'http://localhost:8000/signin.html';
+                        window.location.href = 'https://team-dog.dokku.cse.lehigh.edu/signin.html';
                     }
                     else {
                         console.error('Logout failed');
