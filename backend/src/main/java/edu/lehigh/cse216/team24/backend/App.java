@@ -338,7 +338,8 @@ public class App {
                     String givenName = (String) payload.get("given_name");
 
                     if (!(domain.equals("lehigh.edu"))) {
-                        resp = new StructuredResponse("error", "Non-Lehigh user", null, null, null);
+                        /* don't care that it is from lehigh */
+                        resp = new StructuredResponse("ok", "Non-Lehigh user", null, null, null);
                         ctx.result(gson.toJson(resp));
                         return;
                     }
