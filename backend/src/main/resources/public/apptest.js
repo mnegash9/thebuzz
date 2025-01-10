@@ -392,36 +392,46 @@ document.addEventListener('DOMContentLoaded', function () {
             button.addEventListener('click', handleEditButtonClick);
         });
         document.querySelector('.post-button').addEventListener('click', function () { return __awaiter(_this, void 0, void 0, function () {
-            var messageInput, message, response, error_6;
+            var postButton, messageInput, message, response, error_6;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        postButton = document.querySelector('.post-button');
                         messageInput = document.querySelector('.post-input');
                         message = messageInput.value;
-                        if (!message.trim()) return [3 /*break*/, 4];
+                        if (!(message.trim() && !postButton.disabled)) return [3 /*break*/, 8];
+                        // Disable button while posting
+                        postButton.disabled = true;
                         _a.label = 1;
                     case 1:
-                        _a.trys.push([1, 3, , 4]);
+                        _a.trys.push([1, 6, 7, 8]);
                         return [4 /*yield*/, fetch("".concat(baseUrl, "/ideas"), {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
-                                    'Cache-Control': 'no-store', // Prevent caching of POST requests
+                                    'Cache-Control': 'no-store',
                                 },
                                 body: JSON.stringify({ mIdea: message })
                             })];
                     case 2:
                         response = _a.sent();
-                        if (response.ok) {
-                            messageInput.value = '';
-                            fetchPosts();
-                        }
-                        return [3 /*break*/, 4];
+                        if (!response.ok) return [3 /*break*/, 4];
+                        messageInput.value = '';
+                        return [4 /*yield*/, fetchPosts()];
                     case 3:
+                        _a.sent(); // Wait for posts to update
+                        return [3 /*break*/, 5];
+                    case 4: throw new Error('Failed to post');
+                    case 5: return [3 /*break*/, 8];
+                    case 6:
                         error_6 = _a.sent();
                         console.error("Error posting message:", error_6);
-                        return [3 /*break*/, 4];
-                    case 4: return [2 /*return*/];
+                        return [3 /*break*/, 8];
+                    case 7:
+                        // Re-enable button whether request succeeded or failed
+                        postButton.disabled = false;
+                        return [7 /*endfinally*/];
+                    case 8: return [2 /*return*/];
                 }
             });
         }); });
@@ -596,12 +606,12 @@ document.addEventListener('DOMContentLoaded', function () {
         var postButton = document.querySelector('.post-button');
         var postInput = document.querySelector('.post-input');
         var uploadedFile = null;
-        // File input change event to update file name display
+        var isSubmitting = false; // Track submission state
         if (fileInput) {
             fileInput.addEventListener('change', function () {
                 if (fileInput.files && fileInput.files.length > 0) {
                     uploadedFile = fileInput.files[0];
-                    fileNameDisplay.textContent = uploadedFile.name; // Update file name display
+                    fileNameDisplay.textContent = uploadedFile.name;
                 }
                 else {
                     fileNameDisplay.textContent = 'No file selected';
@@ -609,33 +619,41 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
         }
-        // Modify post button to include file upload
         if (postButton && postInput) {
             postButton.addEventListener('click', function () { return __awaiter(_this, void 0, void 0, function () {
                 var message, base64String, error_10, payload, response, errorMessage, error_11;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
+                            if (isSubmitting)
+                                return [2 /*return*/]; // Prevent duplicate submissions
                             message = postInput.value.trim();
                             if (!message && !uploadedFile) {
                                 alert('Please enter a message or attach a file.');
                                 return [2 /*return*/];
                             }
-                            base64String = null;
-                            if (!uploadedFile) return [3 /*break*/, 4];
                             _a.label = 1;
                         case 1:
-                            _a.trys.push([1, 3, , 4]);
-                            return [4 /*yield*/, convertFileToBase64(uploadedFile)];
+                            _a.trys.push([1, 11, 12, 13]);
+                            isSubmitting = true;
+                            postButton.disabled = true;
+                            postButton.textContent = 'Posting...'; // Visual feedback
+                            base64String = null;
+                            if (!uploadedFile) return [3 /*break*/, 5];
+                            _a.label = 2;
                         case 2:
-                            base64String = _a.sent();
-                            return [3 /*break*/, 4];
+                            _a.trys.push([2, 4, , 5]);
+                            postButton.textContent = 'Processing file...';
+                            return [4 /*yield*/, convertFileToBase64(uploadedFile)];
                         case 3:
+                            base64String = _a.sent();
+                            return [3 /*break*/, 5];
+                        case 4:
                             error_10 = _a.sent();
                             console.error('Error converting file to Base64:', error_10);
                             alert('Failed to process the uploaded file.');
                             return [2 /*return*/];
-                        case 4:
+                        case 5:
                             payload = {
                                 mIdea: message,
                             };
@@ -643,40 +661,45 @@ document.addEventListener('DOMContentLoaded', function () {
                                 payload.file = base64String;
                                 payload.fileName = uploadedFile.name;
                             }
-                            _a.label = 5;
-                        case 5:
-                            _a.trys.push([5, 10, , 11]);
+                            postButton.textContent = 'Uploading...';
                             return [4 /*yield*/, fetch("".concat(baseUrl, "/ideas"), {
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/json',
-                                        'Cache-Control': 'no-store', // Prevent caching
+                                        'Cache-Control': 'no-store',
                                     },
                                     body: JSON.stringify(payload),
                                 })];
                         case 6:
                             response = _a.sent();
-                            if (!response.ok) return [3 /*break*/, 7];
+                            if (!response.ok) return [3 /*break*/, 8];
+                            // Clear form
                             postInput.value = '';
                             if (fileInput)
                                 fileInput.value = '';
                             if (fileNameDisplay)
                                 fileNameDisplay.textContent = 'No file selected';
                             uploadedFile = null;
-                            fetchPosts();
-                            return [3 /*break*/, 9];
-                        case 7: return [4 /*yield*/, response.text()];
-                        case 8:
+                            return [4 /*yield*/, fetchPosts()];
+                        case 7:
+                            _a.sent();
+                            return [3 /*break*/, 10];
+                        case 8: return [4 /*yield*/, response.text()];
+                        case 9:
                             errorMessage = _a.sent();
-                            alert("Failed to post idea: ".concat(errorMessage));
-                            _a.label = 9;
-                        case 9: return [3 /*break*/, 11];
-                        case 10:
+                            throw new Error(errorMessage);
+                        case 10: return [3 /*break*/, 13];
+                        case 11:
                             error_11 = _a.sent();
                             console.error('Error posting message:', error_11);
-                            alert('An error occurred while posting.');
-                            return [3 /*break*/, 11];
-                        case 11: return [2 /*return*/];
+                            alert("An error occurred: ".concat(error_11.message || 'Failed to post'));
+                            return [3 /*break*/, 13];
+                        case 12:
+                            isSubmitting = false;
+                            postButton.disabled = false;
+                            postButton.textContent = 'Post'; // Reset button text
+                            return [7 /*endfinally*/];
+                        case 13: return [2 /*return*/];
                     }
                 });
             }); });
