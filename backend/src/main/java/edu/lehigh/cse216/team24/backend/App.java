@@ -337,12 +337,14 @@ public class App {
                     String familyName = (String) payload.get("family_name");
                     String givenName = (String) payload.get("given_name");
 
-                    if (!(domain.equals("lehigh.edu"))) {
-                        /* don't care that it is from lehigh */
-                        resp = new StructuredResponse("ok", "Non-Lehigh user", null, null, null);
-                        ctx.result(gson.toJson(resp));
-                        return;
-                    }
+                    /*
+                     * don't care that it is from lehigh
+                     * if (!(domain.equals("lehigh.edu"))) {
+                     * resp = new StructuredResponse("ok", "Non-Lehigh user", null, null, null);
+                     * ctx.result(gson.toJson(resp));
+                     * return;
+                     * }
+                     */
 
                     if (!emailVerified) {
                         resp = new StructuredResponse("error", "Email not verified", null, null, null);
@@ -353,8 +355,8 @@ public class App {
 
                     Integer userId = bz.getUserIdByEmail(email);
                     if (userId == null) {
-
                         bz.addUser(givenName, familyName, email);
+                        userId = bz.getUserIdByEmail(email);
                     }
 
                     // Create session
