@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const baseUrl = 'http://matyas.homelinuxserver.org';
+    const baseUrl = 'https://matyas.homelinuxserver.org';
     const feedContainer = document.querySelector('.feedContainer');
 
     const userId = getQueryParam('user_id');
@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (response.ok) {
-                window.location.href = 'http://matyas.homelinuxserver.org/signin.html';
+                window.location.href = 'https://matyas.homelinuxserver.org/signin.html';
             } else {
                 console.error('Logout failed');
             }
