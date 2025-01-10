@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const feedContainer = document.querySelector('.feedContainer');
 
     const userId = getQueryParam('user_id');
-    
+
     /**
      * Retrieves a query parameter value by name from the URL.
      * @param {string} param - The name of the parameter to retrieve.
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     async function loadUserProfile() {
         const apiUrl = `${baseUrl}/profile/${userId}`;
-    
+
         try {
             const response = await fetch(apiUrl, {
                 method: 'GET',
@@ -54,12 +54,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
-    
+
             const data = await response.json();
-    
+
             if (data.mStatus === 'ok' && data.mData) {
                 const userData = data.mData;
-    
+
                 document.querySelector('.user-name').textContent = `${userData.first} ${userData.last}`;
                 document.querySelector('.user-email').textContent = userData.email;
                 document.querySelector('.user-sexual-identity').textContent = userData.sexualOrientation || 'Not specified';
@@ -107,17 +107,17 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupEditProfileListeners() {
         const saveButton = document.querySelector('.save-button');
         if (saveButton) {
-            saveButton.addEventListener('click', async function() {
+            saveButton.addEventListener('click', async function () {
                 const firstNameInput = document.querySelector('#edit-first-name').value;
                 const lastNameInput = document.querySelector('#edit-last-name').value;
                 const emailInput = document.querySelector('#edit-email').value;
                 const sexualIdentity = document.querySelector('#sexual-identity').value;
                 const genderOrientation = document.querySelector('#gender-orientation').value;
                 const note = document.querySelector('#note').value;
-                
+
                 try {
                     const response = await fetch(`${baseUrl}/profile/${userId}`, {
-                        method: 'PUT', 
+                        method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
                             'Cache-Control': 'no-store', // do not cache updates
@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     profileSection.querySelector('.user-name').textContent = userData.first + " " + userData.last;
                     profileSection.querySelector('.user-email').textContent = userData.email;
                     profileSection.querySelector('.user-note').textContent = userData.note || 'No note';
-                    showSection('public-profile'); 
+                    showSection('public-profile');
                 } else {
                     console.error("Failed to load user profile:", data);
                 }
@@ -182,7 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 cache: 'default', // Browser decides when to use the cache
             });
             const data = await response.json();
-    
+
             if (data.mStatus === "ok" && data.mData) {
                 const groupedPosts = groupPostsByIdeaId(data.mData);
                 displayPosts(groupedPosts);
@@ -193,7 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Error fetching posts:", error);
         }
     }
-    
+
     /**
      * Groups posts by their idea ID, collecting comments for each post.
      * @param {Array} data - The array of post and comment data from the server.
@@ -201,10 +201,10 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function groupPostsByIdeaId(data) {
         const posts = {};
-    
+
         data.forEach(item => {
             const ideaId = item.idea_id;
-    
+
             // If the idea doesn't exist in the posts object, create it
             if (!posts[ideaId]) {
                 posts[ideaId] = {
@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     comments: []
                 };
             }
-    
+
             if (item.comment_id && item.comment_id > 0) {
                 posts[ideaId].comments.push({
                     comment_id: item.comment_id,
@@ -233,8 +233,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         });
-    
-        return Object.values(posts); 
+
+        return Object.values(posts);
     }
 
     /**
@@ -243,22 +243,22 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function linkify(text) {
         const urlRegex = /(http|ftp|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])/ig;
-        return text.replace(urlRegex, function(url) {
+        return text.replace(urlRegex, function (url) {
             return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
         });
     }
-    
+
     /**
      * Renders posts in the feed container.
      * @param {Array} posts - An array of grouped posts to display.
      */
     function displayPosts(posts) {
-        feedContainer.innerHTML = ''; 
-    
+        feedContainer.innerHTML = '';
+
         posts.forEach(post => {
             const postElement = document.createElement('div');
             postElement.classList.add('post');
-    
+
             postElement.innerHTML = `
             <div class="post-header">
                 <div class="post-user-icon"></div>
@@ -289,7 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button class="add-comment-button" data-id="${post.idea_id}">Add</button>
             </div>
             `;
-    
+
             feedContainer.appendChild(postElement);
         });
 
@@ -319,54 +319,65 @@ document.addEventListener('DOMContentLoaded', () => {
                 const ideaId = button.getAttribute('data-id');
                 const commentInput = button.previousElementSibling;
                 postComment(ideaId, commentInput.value);
-                commentInput.value = ''; 
+                commentInput.value = '';
             });
         });
 
-        
-    document.querySelectorAll('.edit-comment-button').forEach(button => {
-        button.addEventListener('click', handleEditButtonClick);
-    });
 
-    document.querySelector('.post-button').addEventListener('click', async () => {
-        const messageInput = document.querySelector('.post-input');
-        const message = messageInput.value;
 
-        if (message.trim()) {
-            try {
-                const response = await fetch(`${baseUrl}/ideas`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Cache-Control': 'no-store', // Prevent caching of POST requests
-                    },
-                    body: JSON.stringify({ mIdea: message })
-                });
+        document.querySelectorAll('.edit-comment-button').forEach(button => {
+            button.addEventListener('click', handleEditButtonClick);
+        });
 
-                if (response.ok) {
-                    messageInput.value = ''; 
-                    fetchPosts(); 
+        document.querySelector('.post-button').addEventListener('click', async () => {
+            const postButton = document.querySelector('.post-button');
+            const messageInput = document.querySelector('.post-input');
+            const message = messageInput.value;
+
+            if (message.trim() && !postButton.disabled) {
+                // Disable button while posting
+                postButton.disabled = true;
+
+                try {
+                    const response = await fetch(`${baseUrl}/ideas`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Cache-Control': 'no-store',
+                        },
+                        body: JSON.stringify({ mIdea: message })
+                    });
+
+                    if (response.ok) {
+                        messageInput.value = '';
+                        await fetchPosts(); // Wait for posts to update
+                    } else {
+                        throw new Error('Failed to post');
+                    }
+                } catch (error) {
+                    console.error("Error posting message:", error);
+                    // Show error to user
+                } finally {
+                    // Re-enable button whether request succeeded or failed
+                    postButton.disabled = false;
                 }
-            } catch (error) {
-                console.error("Error posting message:", error);
             }
-        }
-    });
-
-    document.querySelectorAll('.post-username').forEach(element => {
-        element.addEventListener('click', function() {
-            const userId = this.getAttribute('user-id');
-            loadPublicProfile(userId);
         });
-    });
 
-    document.querySelectorAll('.comment-username').forEach(element => {
-        element.addEventListener('click', function() {
-            const userId = this.getAttribute('user-id');
-            loadPublicProfile(userId);
+        document.querySelectorAll('.post-username').forEach(element => {
+            element.addEventListener('click', function () {
+                const userId = this.getAttribute('user-id');
+                loadPublicProfile(userId);
+            });
         });
-    });
-}
+
+        document.querySelectorAll('.comment-username').forEach(element => {
+            element.addEventListener('click', function () {
+                const userId = this.getAttribute('user-id');
+                loadPublicProfile(userId);
+            });
+        });
+    }
 
     /**
      * Casts a vote for an idea, either upvote or downvote.
@@ -379,7 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(`${baseUrl}${endpoint}`, { method: 'PUT' });
             if (response.ok) {
-                fetchPosts(); 
+                fetchPosts();
             }
         } catch (error) {
             console.error(`Error ${type}voting:`, error);
@@ -404,7 +415,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 if (response.ok) {
-                    fetchPosts(); 
+                    fetchPosts();
                 }
             } catch (error) {
                 console.error("Error posting comment:", error);
@@ -420,16 +431,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const commentId = button.getAttribute('data-id');
         const commentDiv = button.parentElement;
         const commentBodyDiv = commentDiv.querySelector('.comment-body');
-    
+
         const currentText = commentBodyDiv.textContent;
         commentBodyDiv.innerHTML = `<input type="text" class="edit-comment-input" value="${currentText}">`;
         button.textContent = "Save";
         button.classList.add('save-comment-button');
-    
+
         button.removeEventListener('click', handleEditButtonClick);
         button.addEventListener('click', () => saveComment(commentId, commentDiv));
     }
-    
+
     /**
      * Saves the updated comment text to the server.
      * @param {string} commentId - ID of the comment being edited.
@@ -438,7 +449,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function saveComment(commentId, commentDiv) {
         const editInput = commentDiv.querySelector('.edit-comment-input');
         const updatedText = editInput.value;
-    
+
         try {
             const response = await fetch(`${baseUrl}/comments/${commentId}`, {
                 method: 'PUT',
@@ -448,17 +459,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 body: JSON.stringify({ body: updatedText })
             });
-    
+
             if (response.ok) {
                 const commentBodyDiv = commentDiv.querySelector('.comment-body');
                 commentBodyDiv.textContent = updatedText;
-    
+
                 // Change "Save" button back to "Edit"
                 const saveButton = commentDiv.querySelector('.save-comment-button');
                 saveButton.textContent = "Edit";
                 saveButton.classList.remove('save-comment-button');
-                saveButton.removeEventListener('click', saveComment); 
-                saveButton.addEventListener('click', handleEditButtonClick); 
+                saveButton.removeEventListener('click', saveComment);
+                saveButton.addEventListener('click', handleEditButtonClick);
             }
         } catch (error) {
             console.error("Error saving comment:", error);
@@ -473,11 +484,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.content').forEach(section => {
             section.style.display = 'none';
         });
-    
+
         // Show the requested section
         const section = document.getElementById(sectionId);
         if (section) {
-            section.style.display = 'block';  
+            section.style.display = 'block';
         } else {
             console.error('Requested section not found:', sectionId);
         }
@@ -491,82 +502,94 @@ document.addEventListener('DOMContentLoaded', () => {
         const fileNameDisplay = document.querySelector('#file-name-display');
         const postButton = document.querySelector('.post-button');
         const postInput = document.querySelector('.post-input');
-    
+
         let uploadedFile = null;
-    
-        // File input change event to update file name display
+        let isSubmitting = false; // Track submission state
+
         if (fileInput) {
             fileInput.addEventListener('change', () => {
                 if (fileInput.files && fileInput.files.length > 0) {
                     uploadedFile = fileInput.files[0];
-                    fileNameDisplay.textContent = uploadedFile.name; // Update file name display
+                    fileNameDisplay.textContent = uploadedFile.name;
                 } else {
                     fileNameDisplay.textContent = 'No file selected';
                     uploadedFile = null;
                 }
             });
         }
-    
-        // Modify post button to include file upload
+
         if (postButton && postInput) {
             postButton.addEventListener('click', async () => {
+                if (isSubmitting) return; // Prevent duplicate submissions
+
                 const message = postInput.value.trim();
-    
+
                 if (!message && !uploadedFile) {
                     alert('Please enter a message or attach a file.');
                     return;
                 }
-    
-                let base64String = null;
-                if (uploadedFile) {
-                    try {
-                        base64String = await convertFileToBase64(uploadedFile);
-                    } catch (error) {
-                        console.error('Error converting file to Base64:', error);
-                        alert('Failed to process the uploaded file.');
-                        return;
-                    }
-                }
-    
-                const payload = {
-                    mIdea: message,
-                };
-    
-                if (base64String) {
-                    payload.file = base64String;
-                    payload.fileName = uploadedFile.name;
-                }
-    
+
                 try {
+                    isSubmitting = true;
+                    postButton.disabled = true;
+                    postButton.textContent = 'Posting...'; // Visual feedback
+
+                    let base64String = null;
+                    if (uploadedFile) {
+                        try {
+                            postButton.textContent = 'Processing file...';
+                            base64String = await convertFileToBase64(uploadedFile);
+                        } catch (error) {
+                            console.error('Error converting file to Base64:', error);
+                            alert('Failed to process the uploaded file.');
+                            return;
+                        }
+                    }
+
+                    const payload = {
+                        mIdea: message,
+                    };
+
+                    if (base64String) {
+                        payload.file = base64String;
+                        payload.fileName = uploadedFile.name;
+                    }
+
+                    postButton.textContent = 'Uploading...';
                     const response = await fetch(`${baseUrl}/ideas`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Cache-Control': 'no-store', // Prevent caching
+                            'Cache-Control': 'no-store',
                         },
                         body: JSON.stringify(payload),
                     });
-    
+
                     if (response.ok) {
+                        // Clear form
                         postInput.value = '';
                         if (fileInput) fileInput.value = '';
                         if (fileNameDisplay) fileNameDisplay.textContent = 'No file selected';
                         uploadedFile = null;
-    
-                        fetchPosts();
+
+                        await fetchPosts();
                     } else {
                         const errorMessage = await response.text();
-                        alert(`Failed to post idea: ${errorMessage}`);
+                        throw new Error(errorMessage);
                     }
                 } catch (error) {
                     console.error('Error posting message:', error);
-                    alert('An error occurred while posting.');
+                    alert(`An error occurred: ${error.message || 'Failed to post'}`);
+                } finally {
+                    isSubmitting = false;
+                    postButton.disabled = false;
+                    postButton.textContent = 'Post'; // Reset button text
                 }
             });
         }
     }
-    
-    
+
+
     /**
      * Converts a file to a base64 string
      * @param {File} file - The file to convert
@@ -584,19 +607,19 @@ document.addEventListener('DOMContentLoaded', () => {
             reader.readAsDataURL(file);
         });
     }
-    
+
 
     if (document.querySelector('#file-input')) {
         setupFileUploadButton();
     }
 
     if (document.querySelector('.feedContainer')) {
-        fetchPosts(); 
+        fetchPosts();
     }
     if (document.querySelector('.user-name')) {
-        loadUserProfile(); 
+        loadUserProfile();
     }
-    if (document.querySelector('#edit-first-name')) { 
+    if (document.querySelector('#edit-first-name')) {
         loadCurrentUserData();
         setupEditProfileListeners();
     }
