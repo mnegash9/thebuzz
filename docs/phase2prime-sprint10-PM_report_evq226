@@ -1,0 +1,325 @@
+# Phase 2' Sprint 10 - PM Report Template
+
+## Team Information [10 points total]
+
+### Team Information:
+
+* Number: 24
+* Name: "Team-Dog"
+* Mentor: <Robert Kilsdonk, rok326@lehigh.edu>
+* Weekly live & synchronous meeting:
+    * without mentor: Thursdays at 16:00
+    * with mentor: Tuesdays at 19:15
+
+### Team Roles:
+
+* Project Manger: <Evan Qi, evq226@lehigh.edu>
+    * The PM has not changed since last week because we are in the same phase.
+* Backend developer: <Sean Hazard, sph325@lehigh.edu>
+* Admin developer: <Matyas Negash, mkn325@lehigh.edu>
+* Web developer: <Monica Fornaszewski, mof226@lehigh.edu>
+* Mobile developer: <Mohamed Elhefnawy, mae226@lehigh.edu>
+
+### Essential links for this project:
+
+* Team's Dokku URL(s)
+    * https://team-dog.dokku.cse.lehigh.edu/
+* Team's software repo (bitbucket)
+    * https://bitbucket.org/sml3/cse216_fa24_team_24
+* Team's Jira board
+    * https://cse216-fa24-mkn325.atlassian.net/jira/software/projects/T2/boards/34
+
+## Beginning of Phase 2' [20 points total]
+
+Report out on the Phase 2 backlog and any technical debt accrued during Phase 2.
+
+1. What required Phase 2 functionality was not implemented and why? 
+    * Admin-cli
+        1. There is no missing functionality in admin-cli
+    * Backend
+        1. Missing functionality 1: Need to store user profiles
+            * Why: Bug for storing the user profile based of unique identifier
+    * Mobile FE
+        1. Missing functionality 1: Comment editing
+            * Why: Bugs surrounding the implementation
+        2. Missing functionality 2: Unique profile views
+            * Why: Need proper usage of session id 
+    * Web FE
+        1. Missing functionality 1: Comment editing
+            * Why: Bugs surrounding the implementation
+        2. Missing functionality 2: Unique profile views
+            * Why: Need proper usage of session id 
+
+2. What technical debt did the team accrue during Phase 2?
+
+    * Admin-cli
+        1. Tech debt item 1: Refactor dashboard 
+        2. Tech debt item 2: Be able to access unique tables 
+    * Backend
+        1. Tech debt item 1: Comment editing 
+        2. Tech debt item 2: Unique profile views 
+    * Mobile FE
+        1. Tech debt item 1: Comment editing  
+        2. Tech debt item 2: Unique profile views 
+    * Web FE
+        1. Tech debt item 1: Comment editing 
+        2. Tech debt item 2: Unique profile views 
+
+## End of Phase 2' [20 points total]
+
+Report out on the Phase 2' backlog as it stands at the conclusion of Phase 2'.
+
+1. What required Phase 2 functionality still has not been implemented or is not operating properly and why?
+
+    1. Profile Views: We have the views but are not able to properly populate the view based on the database yet
+    2. Comment editing: We were not able to use the user session to be able to allow the user to be able to edit their own comment. 
+
+2. What technical debt remains?
+
+    1. Better admin-cli dashboard interface
+    2. Web front end tests for idea functions. 
+
+3. If there was any remaining Phase 2 functionality that needed to be implemented in Phase 2', what did the PM do to assist in the effort of getting this functionality implemented and operating properly?
+
+    1. As a team we still have to work together to get the unique profile views and comment editing working properly. The PM ensured there was communication between the team members so that they were on the same page. 
+    The PM also checked the functionality of features to ensure they are working as they should. 
+
+4. Describe how the team worked together in Phase 2'. Were all members engaged? Was the work started early in the week or was there significant procrastination?
+
+    The team started early and worked hard to get the remaining functionality implemented from last phase. The members all worked proactively and communicated with one another about their progress. We were also open to 
+    meeting in person to discuss further. 
+
+5. What might you suggest the team or the next PM "start", "stop", or "continue" doing in the next Phase?
+
+    1. We will stop being stuck on one problem for too long and work on the other requirements as we can
+    2. We will continue the great teamwork and communication with each other
+    3. We will start having a retrospective at the end of the sprint to discuss how we could implement key functions at the beginning of the sprint as fast as we can. 
+
+## Role reporting [50 points total]
+
+Report-out on each team members' activity, from the PM perspective (you may seek input where appropriate, but this is primarily a PM related activity).
+**In general, when answering the below you should highlight any changes from last week.**
+
+### Back-end
+
+What did the back-end developer do during Phase 2'?
+
+1. Overall evaluation of back-end development (how was the process? was Jira used appropriately? how were tasks created? how was completion of tasks verified?)
+
+    * The backend was efficient in finishing the tasks that weren't completed last week. They started to communication with the team members early, 
+    and followed the Jira board tasks and updated the board as well. The completion of the tasks were verified with the team during our in person meetings.
+
+2. List your back-end's REST API endpoints
+
+    * GET /ideas
+    * GET /ideas/{id}
+    * POST /ideas
+    * DELETE /ideas/{id}
+    * GET /users/{id}
+    * PUT /users/{id}
+    * GET /ideas/{ideaId}/comments
+    * POST /ideas/{ideaId}/comments
+    * GET /comments/{id}
+    * PUT /comments/{id}
+    * POST /ideas/{ideaId}/upvote
+    * POST /ideas/{ideaId}/downvote
+    * GET /ideas/{ideaId}/votes
+    * GET /dashboard
+
+3. Assess the quality of the back-end code
+
+    * The backend code is quality and refactored down into multiple files.
+
+4. Describe the code review process you employed for the back-end
+
+    * The backend code was reviewed by the team and the PM, we looked at each functionality and tested it to make sure all the requirements were met.
+
+5. What was the biggest issue that came up in code review of the back-end server?
+
+    * The unique profile views were not storing properly. 
+
+6. Is the back-end code appropriately organized into files / classes / packages?
+
+    * Yes, it is organized into multiple files and refactored down. 
+
+7. Are the dependencies in the `pom.xml` file appropriate? Were there any unexpected dependencies added to the program?
+
+    * The dependencies in the 'pom.xml' are appropriate and had all the program requirements.
+
+8. Evaluate the quality of the unit tests for the back-end
+
+    * The unit tests are good but we are unable to test profile views and comment editing because of the lack of functionality at the time. 
+
+9. Describe any technical debt you see in the back-end
+
+    * Database.java could be refactored down potentially.
+
+### Admin
+
+What did the admin front-end developer do during Phase 2'?
+
+1. Overall evaluation of admin app development (how was the process? was Jira used appropriately? how were tasks created? how was completion of tasks verified?)
+
+    * Admin started the tasks early and was able to meet the rubric requirements. The functionality allowed for proper manipulation of the data in the tables in the database.
+    The admin dev followed the requirements of the Jira board well and logged all the missing requirements into the backlog. 
+
+2. Describe the tables created by the admin app
+
+    * commenttable - has body (content), idea_id (identifier for idea), and user_id (poster)
+    * downvotetable - downvote_id (identifier for downvote), user_id (poster id), idea_id (identifier for idea)
+    * ideatable - idea_id (idenitfier for id), user_id (idea poster), idea (content), idea_valid
+    * upvotetable - upvote_id (upvote identifier), user_id (user who upvoted), idea_id (unique idea identifier)
+    * usertable - user_id (unique identifier), first_name, last_name, email, gender_identity, sexual_orientation
+
+3. Assess the quality of the admin code
+
+    * The admin code is high quality and is able to create and drop tables for the necessary components of the app. 
+
+4. Describe the code review process you employed for the admin app
+
+    * The admin developer demonstrated the app functionality to the PM and the team members to ensure all the functionality matched the correct description. 
+
+5. What was the biggest issue that came up in code review of the admin app?
+
+    * The biggest issue that came up in code review was that the tables werent being dropped properly at first. 
+
+6. Is the admin app code appropriately organized into files / classes / packages?
+
+    * The admin app is appropriately organized into files/classes/packages
+
+7. Are the dependencies in the `pom.xml` file appropriate? Were there any unexpected dependencies added to the program?
+
+    * The dependencies in the 'pom.xml' are appropriate and had all the program requirements.
+
+8. Evaluate the quality of the unit tests for the admin app
+
+    * The unit tests performed the proper testing of functionality required in the application ensuring that all the tables were poplated with data correctly. 
+
+9. Describe any technical debt you see in the admin app
+
+    * We would like the functionality to view the database of choice. 
+
+### Web
+
+What did the web front-end developer do during Phase 2'?
+
+1. Overall evaluation of Web development (how was the process? was Jira used appropriately? how were tasks created? how was completion of tasks verified?)
+
+    * The web developer did well, this sprint they were able to implement the features that they weren't able to last sprint due to the error handling of the 
+    unique user id (comments, upvoting, and posting). Jira was used to follow the necessary requirements and debt was placed in the backlog. The completion of the tasks were
+verified through a demonstration to the team and the PM
+
+2. Describe the different models and other templates used to provide the web front-end's user interface
+
+    * The web interface was created using a logic that utilized one html file that follows the the flow of a user journey. It is built using HTML5
+
+3. Assess the quality of the Web front-end code
+
+    * The quality of the Web front-end code is up to standard and meets the sprints requirements. 
+
+4. Describe the code review process you employed for the Web front-end
+
+    * The code review process was done with the PM and the rest of the team to ensure the functionality was working as it should. 
+
+5. What was the biggest issue that came up in code review of the Web front-end?
+
+    * Web front end did not properly redirect the user after the signed in with Google Authentication. 
+
+6. Is the Web front-end code appropriately organized into files / classes / packages?
+
+    * Web front end is appropriately organized into multiple files. We are using a Typescript, HTML, CSS stack. Tests are done with Jasmine. 
+
+7. Are the dependencies in the `package.json` file appropriate? Were there any unexpected dependencies added to the program?
+
+    * The dependencies in the package.json were appropriate for the functionality we needed. 
+
+8. Evaluate the quality of the unit tests for the Web front-end 
+
+    * The unit test tested the front end functionality (interface) properly. 
+
+9. Describe any technical debt you see in the Web front-end
+
+    * We still need to add additional tests for features regarding ideas. 
+
+### Mobile
+
+What did the mobile front-end developer do during Phase 2'?
+
+1. Overall evaluation of Mobile development (how was the process? was Jira used appropriately? how were tasks created? how was completion of tasks verified?)
+
+    * The mobile development went well this phase. We were able to eliminate a lot of the debt this week regarding the user sessions. Jira was used to follow the necessary requirements and debt was placed in the backlog. The completion of the tasks
+were verified through a demonstration to the team and the PM
+
+2. Describe the activities that comprise the Mobile app
+
+    * Follows the login flow before being able to see unique profile view, posts, and create posts and comments.
+
+3. Assess the quality of the Mobile code
+
+    * The mobile code is quality. It has the proper routes to access the backend, and post, get, and update accordingly. 
+
+4. Describe the code review process you employed for the Mobile front-end
+
+    * Mobile front end code is reviewed by the team and the PM to ensure that it has all the proper functionality. 
+
+5. What was the biggest issue that came up in code review of the Mobile front-end?
+
+    * The session id was being passed as NULL which we couldn't figure out why at first. 
+
+6. Is the Mobile front-end code appropriately organized into files / classes / packages?
+
+    * Yes, there are multiple views that are organized in multiple files.
+
+7. Are the dependencies in the `pubspec.yaml` (or build.gradle) file appropriate? Were there any unexpected dependencies added to the program?
+
+    * The dependencies in the pubspec.yaml are proper and are adequate for the functionality that is required in our program.
+
+8. Evaluate the quality of the unit tests for the Mobile front-end here
+
+    * The quality of the unit test helps test the interface properly.
+
+9. Describe any technical debt you see in the Mobile front-end here
+
+    * Could use a viewModel to fetch data more efficiently.
+
+### Project Management
+
+Self-evaluation of PM performance
+
+1. When did your team meet with your mentor, and for how long?
+
+    * We talked to our mentor over Zoom to ensure that we had some direction this sprint. We also talked over Slack about questions we had. Additionally we met during recitation hours to ask additional questions. 
+
+2. Describe your use of Jira. Did you have too much detail? Too little? Just enough? Did you implement policies around its use (if so, what were they?)?
+
+    * Jira tasks are made by the PM and helps guide the developers on the required tasks. Backlog items are added by the developers to document their
+    technical debt  
+
+3. How did you conduct team meetings? How did your team interact outside of these meetings?
+
+    * We conducted our first team meeting of the sprint over Zoom to discuss how we would attack the work and backlog of this week. We communicated over messages to update on each other's progress. We also met during recitation hours 
+    to finish our video recording. 
+
+4. What techniques (daily check-ins/scrums, team programming, timelines, Jira use, group design exercises) did you use to mitigate risk? Highlight any changes from last week.
+
+    * We had a lot of updates in person as well as on Slack. Jira was used to demonstrate completion of tasks. We encouraged each other to work together in order to fix bugs faster. 
+
+5. Describe any difficulties you faced in managing the interactions among your teammates. Were there any team issues that arose? If not, what do you believe is keeping things so constructive?
+
+    * We did not have much difficulties managing the interactions among my teammates, we all collaborated together efficiently and collaboratively. I think it is constructive because we all seek each other's perspectives and opinions to make our features and implementation better. 
+
+6. Describe the most significant obstacle or difficulty your team faced.
+
+    * We couldn't figure out to configure profile views with the unique users. 
+
+7. What is your biggest concern as you think ahead to the next phase of the project? To the next sprint? What steps can the team take to reduce your concern?
+
+    * We are concerned about the media posting implementation. To reduce own concern we will watch videos on the implementation of those features so we have a direction to implement it. 
+
+8. How well did you estimate time during the early part of the phase? How did your time estimates change as the phase progressed?
+
+    * We estimated the time needed well. As the time elapsed, we were consistent in our work and was able to finish it in the time that we expected. 
+
+9. What aspects of the project would cause concern for your customer right now, if any?
+
+    * There are no unique profile views. People would probably want to be able to click into their own profiles and see the details of it.

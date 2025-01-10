@@ -1,0 +1,22 @@
+# Common settings that generally should always be used with your language specific settings
+# inspired by https://github.com/gitattributes/gitattributes/blob/master/Common.gitattributes
+
+# Auto detect text files and perform LF normalization
+*          text=auto
+
+#
+# The above will handle all files NOT found below
+#
+
+# Scripts
+*.bash     text eol=lf
+*.ksh      text eol=lf
+*.sh       text eol=lf
+*.zsh      text eol=lf
+
+# Serialisation
+*.json     text
+*.toml     text
+*.xml      text
+*.yaml     text
+*.yml      text

@@ -1,0 +1,10 @@
+{
+    "entryPoints": ["app.ts"],
+    "out": "docs",
+    "name": "Simple Message Board Documentation",
+    "excludePrivate": false,
+    "excludeProtected": false,
+    "theme": "default",
+    "includeVersion": true,
+    "tsconfig": "./tsconfig.json"
+  }

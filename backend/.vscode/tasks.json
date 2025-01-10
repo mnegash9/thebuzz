@@ -1,0 +1,23 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Package and Run Tests",
+            "type": "shell",
+            "command": "mvn",
+            "args": [
+                "package"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": false
+            },
+            "options": {
+                "env": {
+                    "DATABASE_URI": "jdbc:postgresql://aws-0-us-east-1.pooler.supabase.com:5432/postgres?user=postgres.vxbzhdwdqirffzesdalz&password=3haaralinged"
+                },
+            },
+            "problemMatcher": []
+        }
+    ],
+}
