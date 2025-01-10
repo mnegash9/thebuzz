@@ -1,6 +1,7 @@
 #!/bin/bash
 set -x
 git branch -D deploy-dokku
+git push -d origin deploy-dokku
 read -p "Press enter to continue"
 git switch backend
 read -p "Press enter to continue"
