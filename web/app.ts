@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const baseUrl = 'https://team-dog.dokku.cse.lehigh.edu';
+    const baseUrl = 'http://matyas.linuxhomeserver.org';
     const feedContainer = document.querySelector('.feedContainer');
 
     const userId = getQueryParam('user_id');
@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (response.ok) {
-                window.location.href = 'https://team-dog.dokku.cse.lehigh.edu/signin.html';
+                window.location.href = 'http://matyas.linuxhomeserver.org/signin.html';
             } else {
                 console.error('Logout failed');
             }
