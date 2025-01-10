@@ -47,9 +47,9 @@ public class Users {
     /** the SQL for creating the table in our database */
     private static final String SQL_CREATE_TABLE = String.format(
             "CREATE TABLE IF NOT EXISTS %s (" +
-                    "user_id SERIAL PRIMARY KEY, first_name VARCHAR(32) NOT NULL, last_name VARCHAR(32) NOT NULL, " +
-                    "email VARCHAR(48) NOT NULL, gender_identity VARCHAR(32), sexual_orient VARCHAR(32), " +
-                    "note VARCHAR(512), active_account BOOLEAN DEFAULT true, UNIQUE (email));",
+                    "user_id SERIAL PRIMARY KEY, first_name TEXT NOT NULL, last_name TEXT, " +
+                    "email TEXT NOT NULL, gender_identity TEXT, sexual_orient TEXT, " +
+                    "note TEXT, active_account BOOLEAN DEFAULT true, UNIQUE (email));",
             userTableName);
 
     /**
@@ -128,7 +128,8 @@ public class Users {
 
     ////////////////////////// INSERT //////////////////////////
     /**
-     * ps to instert into UserTable a new row with next auto-gen id and the three given
+     * ps to instert into UserTable a new row with next auto-gen id and the three
+     * given
      * values
      */
     private PreparedStatement mInsertOne;
@@ -166,9 +167,10 @@ public class Users {
      * Insert a user row into the database
      *
      * @param first = the first name of the user
-     * @param last = last name of the user
+     * @param last  = last name of the user
      * @param email = the email of the new user
-     * @return The number of rows that were inserted. 0 indicates no insertion or an error.
+     * @return The number of rows that were inserted. 0 indicates no insertion or an
+     *         error.
      */
     int insertRow(String first, String last, String email) {
         try {
@@ -195,7 +197,7 @@ public class Users {
      * Execute the insert query with the given user parameters
      *
      * @param first = the first name of the user
-     * @param last = last name of the user
+     * @param last  = last name of the user
      * @param email = the email of the new user
      * @return The number of rows that were inserted
      * @throws SQLException if there's an error executing the query
@@ -245,7 +247,7 @@ public class Users {
     /**
      * Update the gender identity for a user in the database
      * 
-     * @param id = The user id of the user to update
+     * @param id   = The user id of the user to update
      * @param idea = The new gender identity
      * @return The number of rows that were updated. -1 indicates an error.
      */
@@ -295,7 +297,7 @@ public class Users {
     /**
      * Update the sexual orientation for a user in the database
      * 
-     * @param id = The user id of the user to update
+     * @param id   = The user id of the user to update
      * @param idea = The new sexual orientation
      * @return The number of rows that were updated. -1 indicates an error.
      */
@@ -345,7 +347,7 @@ public class Users {
     /**
      * Update the note for a user in the database
      * 
-     * @param id = The user id of the user to update
+     * @param id   = The user id of the user to update
      * @param idea = The new note
      * @return The number of rows that were updated. -1 indicates an error.
      */
@@ -404,8 +406,9 @@ public class Users {
     /**
      * Update the status for a user in the database
      *
-     * @param user_id = The user id of the user to update
-     * @param active_user = The new status of the user (true is valid false is deactivated)
+     * @param user_id     = The user id of the user to update
+     * @param active_user = The new status of the user (true is valid false is
+     *                    deactivated)
      * @return The number of rows that were updated. -1 indicates an error.
      */
     int updateStatus(int user_id, boolean active_user) {
@@ -429,7 +432,7 @@ public class Users {
     /**
      * Executes the update status query with the given parameters
      *
-     * @param user_id = The user id to update
+     * @param user_id     = The user id to update
      * @param active_user = The new active status
      * @return Number of rows updated, or -1 on error
      * @throws SQLException if there's a database error
@@ -502,8 +505,7 @@ public class Users {
         }
     }
 
-    
-    /** 
+    /**
      * @return ArrayList<RowData>
      * @throws SQLException
      */
