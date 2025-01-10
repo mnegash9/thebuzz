@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 document.addEventListener('DOMContentLoaded', function () {
-    var baseUrl = 'http://matyas.homelinuxserver.org';
+    var baseUrl = 'https://matyas.homelinuxserver.org';
     var feedContainer = document.querySelector('.feedContainer');
     var userId = getQueryParam('user_id');
     /**
@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 case 1:
                     response = _a.sent();
                     if (response.ok) {
-                        window.location.href = 'http://matyas.homelinuxserver.org/signin.html';
+                        window.location.href = 'https://matyas.homelinuxserver.org/signin.html';
                     }
                     else {
                         console.error('Logout failed');
