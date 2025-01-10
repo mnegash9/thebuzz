@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 document.addEventListener('DOMContentLoaded', function () {
-    var baseUrl = 'https://team-dog.dokku.cse.lehigh.edu';
+    var baseUrl = 'http://matyas.linuxhomeserver.org';
     var feedContainer = document.querySelector('.feedContainer');
     var userId = getQueryParam('user_id');
     /**
@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 case 1:
                     response = _a.sent();
                     if (response.ok) {
-                        window.location.href = 'https://team-dog.dokku.cse.lehigh.edu/signin.html';
+                        window.location.href = 'http://matyas.linuxhomeserver.org/signin.html';
                     }
                     else {
                         console.error('Logout failed');
