@@ -408,6 +408,8 @@ public class App {
                     Cookie clearCookie = new Cookie("sessionId", "");
                     clearCookie.setMaxAge(0); // Immediately expires the cookie
                     clearCookie.setPath("/");
+                    clearCookie.setHttpOnly(true); // Prevents JavaScript access
+                    clearCookie.setSecure(true); // Only sent over HTTPS
                     ctx.cookie(clearCookie);
 
                     resp = new StructuredResponse("ok", "Logged out successfully", null, null, null);
