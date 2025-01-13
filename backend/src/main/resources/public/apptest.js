@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 document.addEventListener('DOMContentLoaded', function () {
-    var baseUrl = 'https://matyas.homelinuxserver.org';
+    var baseUrl = 'https://thebuzz.homelinuxserver.org';
     var feedContainer = document.querySelector('.feedContainer');
     var userId = getQueryParam('user_id');
     /**
@@ -51,36 +51,44 @@ document.addEventListener('DOMContentLoaded', function () {
     /**
      * Logs out the current user.
      */
-    document.querySelector('.logout-button').addEventListener('click', function () { return __awaiter(void 0, void 0, void 0, function () {
-        var response, error_1;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, fetch("".concat(baseUrl, "/logout"), {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Cache-Control': 'no-store', // Prevent caching of POST requests
-                            }
-                        })];
-                case 1:
-                    response = _a.sent();
-                    if (response.ok) {
-                        window.location.href = 'https://matyas.homelinuxserver.org/signin.html';
-                    }
-                    else {
-                        console.error('Logout failed');
-                    }
-                    return [3 /*break*/, 3];
-                case 2:
-                    error_1 = _a.sent();
-                    console.error("Error logging out:", error_1);
-                    return [3 /*break*/, 3];
-                case 3: return [2 /*return*/];
-            }
-        });
-    }); });
+    var logoutButton = document.querySelector('.logout-button');
+    if (!logoutButton) {
+        console.log("Log out button not found");
+    }
+    else {
+        logoutButton.addEventListener('click', function () { return __awaiter(void 0, void 0, void 0, function () {
+            var response, error_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, fetch("".concat(baseUrl, "/logout"), {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Cache-Control': 'no-store', // Prevent caching of POST requests
+                                }
+                            })];
+                    case 1:
+                        response = _a.sent();
+                        if (response.ok) {
+                            localStorage.clear();
+                            sessionStorage.clear();
+                            window.location.href = baseUrl;
+                        }
+                        else {
+                            console.error('Logout failed. Please try again.');
+                        }
+                        return [3 /*break*/, 3];
+                    case 2:
+                        error_1 = _a.sent();
+                        console.error("Error logging out:", error_1);
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
+                }
+            });
+        }); });
+    }
     /**
      * Loads and displays user profile data.
      */
