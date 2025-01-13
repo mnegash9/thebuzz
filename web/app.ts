@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const baseUrl = 'https://matyas.homelinuxserver.org';
+    const baseUrl = 'https://thebuzz.homelinuxserver.org';
     const feedContainer = document.querySelector('.feedContainer');
 
     const userId = getQueryParam('user_id');
@@ -16,26 +16,33 @@ document.addEventListener('DOMContentLoaded', () => {
     /**
      * Logs out the current user.
      */
-    document.querySelector('.logout-button').addEventListener('click', async () => {
-        try {
-            const response = await fetch(`${baseUrl}/logout`, {
-                method: 'POST',
+    const logoutButton = document.querySelector('.logout-button');
+    if (!logoutButton) {
+        console.log("Log out button not found");
+    } else {
+        logoutButton.addEventListener('click', async () => {
+            try {
+                const response = await fetch(`${baseUrl}/logout`, {
+                    method: 'POST',
 
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Cache-Control': 'no-store', // Prevent caching of POST requests
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'no-store', // Prevent caching of POST requests
+                    }
+                });
+
+                if (response.ok) {
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    window.location.href = baseUrl;
+                } else {
+                    console.error('Logout failed. Please try again.');
                 }
-            });
-
-            if (response.ok) {
-                window.location.href = 'https://matyas.homelinuxserver.org/signin.html';
-            } else {
-                console.error('Logout failed');
+            } catch (error) {
+                console.error("Error logging out:", error);
             }
-        } catch (error) {
-            console.error("Error logging out:", error);
-        }
-    });
+        });
+    }
     /**
      * Loads and displays user profile data.
      */
