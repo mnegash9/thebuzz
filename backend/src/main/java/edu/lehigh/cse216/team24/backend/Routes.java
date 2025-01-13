@@ -1,6 +1,7 @@
 package edu.lehigh.cse216.team24.backend;
 
 import io.javalin.Javalin;
+import io.javalin.http.Context;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
@@ -41,6 +42,16 @@ public class Routes {
 
             // Query the database for all ideas
             StructuredResponse resp = new StructuredResponse("ok", null, null, null, bz.getAllIdeas());
+
+            // Validate user
+            Integer userId = isUserLoggedIn(ctx);
+            if (userId == -1) {
+                resp = new StructuredResponse("error", "Session ID incorrect or missing. User not authenticated.", null,
+                        null, null);
+                ctx.result(gson.toJson(resp));
+                return;
+            }
+
             ctx.result(gson.toJson(resp)); // return JSON representation of response
         });
 
@@ -53,6 +64,15 @@ public class Routes {
 
             Ideas.RowData data = bz.getIdea(idx);
             StructuredResponse resp = null;
+
+            // Validate user
+            Integer userId = isUserLoggedIn(ctx);
+            if (userId == -1) {
+                resp = new StructuredResponse("error", "Session ID incorrect or missing. User not authenticated.", null,
+                        null, null);
+                ctx.result(gson.toJson(resp));
+                return;
+            }
             if (data == null) { // row not found, so return an error response
                 resp = new StructuredResponse("error", "Data with row id " + idx + " not found", null, null, null);
             } else { // we found it, so just return the data
@@ -72,17 +92,11 @@ public class Routes {
             ctx.contentType("application/json"); // MIME type of JSON
             StructuredResponse resp = null;
 
-            // Retrieve session ID from the cookie
-            String sessionId = ctx.cookie("sessionId");
-            if (sessionId == null) {
-                resp = new StructuredResponse("error", "Session ID missing. User not authenticated.", null, null, null);
-                ctx.result(gson.toJson(resp));
-                return;
-            }
-            // Retrieve user ID from email
-            Integer userId = getUserFromSession(sessionId);
-            if (userId == null) {
-                resp = new StructuredResponse("error", "User not found in database", null, null, null);
+            // Validate user
+            Integer userId = isUserLoggedIn(ctx);
+            if (userId == -1) {
+                resp = new StructuredResponse("error", "Session ID incorrect or missing. User not authenticated.", null,
+                        null, null);
                 ctx.result(gson.toJson(resp));
                 return;
             }
@@ -169,20 +183,15 @@ public class Routes {
             ctx.contentType("application/json"); // MIME type of JSON
             StructuredResponse resp;
 
-            // Retrieve session ID from the cookie
-            String sessionId = ctx.cookie("sessionId");
-            if (sessionId == null) {
-                resp = new StructuredResponse("error", "Session ID missing. User not authenticated.", null, null, null);
+            // Validate user
+            Integer userId = isUserLoggedIn(ctx);
+            if (userId == -1) {
+                resp = new StructuredResponse("error", "Session ID incorrect or missing. User not authenticated.", null,
+                        null, null);
                 ctx.result(gson.toJson(resp));
                 return;
             }
-            // Retrieve user ID from email
-            Integer userId = getUserFromSession(sessionId);
-            if (userId == null) {
-                resp = new StructuredResponse("error", "User not found in database", null, null, null);
-                ctx.result(gson.toJson(resp));
-                return;
-            }
+
             // Increment the upvotes in the database, using the provided id
             boolean result = bz.addUpvote(userId, idx);
             if (!result) {
@@ -208,20 +217,15 @@ public class Routes {
             ctx.contentType("application/json"); // MIME type of JSON
             StructuredResponse resp;
 
-            // Retrieve session ID from the cookie
-            String sessionId = ctx.cookie("sessionId");
-            if (sessionId == null) {
-                resp = new StructuredResponse("error", "Session ID missing. User not authenticated.", null, null, null);
+            // Validate user
+            Integer userId = isUserLoggedIn(ctx);
+            if (userId == -1) {
+                resp = new StructuredResponse("error", "Session ID incorrect or missing. User not authenticated.", null,
+                        null, null);
                 ctx.result(gson.toJson(resp));
                 return;
             }
-            // Retrieve user ID from email
-            Integer userId = getUserFromSession(sessionId);
-            if (userId == null) {
-                resp = new StructuredResponse("error", "User not found in database", null, null, null);
-                ctx.result(gson.toJson(resp));
-                return;
-            }
+
             // Increment the downvotes in the database, using the provided id
             boolean result = bz.addDownvote(userId, idx);
             if (!result) {
@@ -249,17 +253,11 @@ public class Routes {
             ctx.contentType("application/json"); // MIME type of JSON
             StructuredResponse resp = null;
 
-            // Retrieve session ID from the cookie
-            String sessionId = ctx.cookie("sessionId");
-            if (sessionId == null) {
-                resp = new StructuredResponse("error", "Session ID missing. User not authenticated.", null, null, null);
-                ctx.result(gson.toJson(resp));
-                return;
-            }
-            // Retrieve user ID from email
-            Integer userId = getUserFromSession(sessionId);
-            if (userId == null) {
-                resp = new StructuredResponse("error", "User not found in database", null, null, null);
+            // Validate user
+            Integer userId = isUserLoggedIn(ctx);
+            if (userId == -1) {
+                resp = new StructuredResponse("error", "Session ID incorrect or missing. User not authenticated.", null,
+                        null, null);
                 ctx.result(gson.toJson(resp));
                 return;
             }
@@ -345,20 +343,15 @@ public class Routes {
             ctx.contentType("application/json"); // MIME type of JSON
             StructuredResponse resp = null;
 
-            // Retrieve session ID from the cookie
-            String sessionId = ctx.cookie("sessionId");
-            if (sessionId == null) {
-                resp = new StructuredResponse("error", "Session ID missing. User not authenticated.", null, null, null);
+            // Validate user
+            Integer userId = isUserLoggedIn(ctx);
+            if (userId == -1) {
+                resp = new StructuredResponse("error", "Session ID incorrect or missing. User not authenticated.", null,
+                        null, null);
                 ctx.result(gson.toJson(resp));
                 return;
             }
-            // Retrieve user ID from email
-            Integer userId = getUserFromSession(sessionId);
-            if (userId == null) {
-                resp = new StructuredResponse("error", "User not found in database", null, null, null);
-                ctx.result(gson.toJson(resp));
-                return;
-            }
+
             // get the request json from the ctx body, turn it into SimpleRequest instance
             // NB: if gson.Json fails, expect server reply with status 500 Internal Server
             // Error
@@ -377,9 +370,19 @@ public class Routes {
         app.get("/dashboard", ctx -> {
             ctx.status(200); // status 200 OK
             ctx.contentType("application/json"); // MIME type of JSON
+            StructuredResponse resp = null;
+
+            // Validate user
+            Integer userId = isUserLoggedIn(ctx);
+            if (userId == -1) {
+                resp = new StructuredResponse("error", "Session ID incorrect or missing. User not authenticated.", null,
+                        null, null);
+                ctx.result(gson.toJson(resp));
+                return;
+            }
 
             // Query the database for all ideas
-            StructuredResponse resp = new StructuredResponse("ok", null, null, null, bz.getDashboard());
+            resp = new StructuredResponse("ok", null, null, null, bz.getDashboard());
             ctx.result(gson.toJson(resp)); // return JSON representation of response
         });
 
@@ -391,17 +394,11 @@ public class Routes {
             ctx.contentType("application/json"); // MIME type of JSON
             StructuredResponse resp = null;
 
-            // Retrieve session ID from the cookie
-            String sessionId = ctx.cookie("sessionId");
-            if (sessionId == null) {
-                resp = new StructuredResponse("error", "Session ID missing. User not authenticated.", null, null, null);
-                ctx.result(gson.toJson(resp));
-                return;
-            }
-            // Retrieve user ID from email
-            Integer userId = getUserFromSession(sessionId);
-            if (userId == null) {
-                resp = new StructuredResponse("error", "User not found in database", null, null, null);
+            // Validate user
+            Integer userId = isUserLoggedIn(ctx);
+            if (userId == -1) {
+                resp = new StructuredResponse("error", "Session ID incorrect or missing. User not authenticated.", null,
+                        null, null);
                 ctx.result(gson.toJson(resp));
                 return;
             }
@@ -439,17 +436,11 @@ public class Routes {
             StructuredResponse resp;
             SimpleRequestUser req = gson.fromJson(ctx.body(), SimpleRequestUser.class);
 
-            // Retrieve session ID from the cookie
-            String sessionId = ctx.cookie("sessionId");
-            if (sessionId == null) {
-                resp = new StructuredResponse("error", "Session ID missing. User not authenticated.", null, null, null);
-                ctx.result(gson.toJson(resp));
-                return;
-            }
-            // Retrieve user ID from email
-            Integer userId = getUserFromSession(sessionId);
-            if (userId == null) {
-                resp = new StructuredResponse("error", "User not found in database", null, null, null);
+            // Validate user
+            Integer userId = isUserLoggedIn(ctx);
+            if (userId == -1) {
+                resp = new StructuredResponse("error", "Session ID incorrect or missing. User not authenticated.", null,
+                        null, null);
                 ctx.result(gson.toJson(resp));
                 return;
             }
@@ -481,6 +472,15 @@ public class Routes {
 
             ArrayList<Buzz.CommentViewData> data = bz.getCommentViewMobile(idx);
             StructuredResponse resp = null;
+
+            // Validate user
+            Integer userId = isUserLoggedIn(ctx);
+            if (userId == -1) {
+                resp = new StructuredResponse("error", "Session ID incorrect or missing. User not authenticated.", null,
+                        null, null);
+                ctx.result(gson.toJson(resp));
+                return;
+            }
             if (data == null) { // row not found, so return an error response
                 resp = new StructuredResponse("error", "Data with idea id " + idx + " not found", null, null, null);
             } else { // we found it, so just return the data
@@ -490,6 +490,28 @@ public class Routes {
             ctx.result(gson.toJson(resp)); // return JSON representation of response
         });
 
+    }
+
+    /**
+     * Function that checks users logged in state and validates the sessionID
+     * 
+     * @param ctx Ctx of the app (used to find the sessionId cookie)
+     * @return returns the userID of the user if valid, otherwise returns -1
+     */
+    private Integer isUserLoggedIn(Context ctx) {
+        // Retrieve session ID from the cookie
+        String sessionId = ctx.cookie("sessionId");
+        Integer userId;
+        if (sessionId == null) {
+            return -1;
+        } else {
+            // Retrieve user ID from email
+            userId = getUserFromSession(sessionId);
+            if (userId == null) {
+                return -1;
+            }
+        }
+        return userId;
     }
 
     /**
