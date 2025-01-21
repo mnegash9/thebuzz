@@ -48,7 +48,7 @@ public class App {
 
     /** Google Oauth Client ID from environement variable */
     private static final String CLIENT_ID_WEB = System.getenv("CLIENT_ID_WEB");
-    private static final String CLIENT_ID_MOBILE = "209952242135-g8lkq6vpma3uit0pbekbu7qefjr6fpsa.apps.googleusercontent.com";
+    private static final String CLIENT_ID_MOBILE = "";
 
     /** User Sessions. string will be email and int is session ID number */
     private static Hashtable<String, Integer> userSessionHashtable = new Hashtable<>();
@@ -315,7 +315,7 @@ public class App {
         app.post("/login", ctx -> {
             ctx.contentType("application/json");
             StructuredResponse resp;
-
+            bz = new Buzz();
             try {
                 // Parse request body
                 SimpleRequestLogin req = gson.fromJson(ctx.body(), SimpleRequestLogin.class);
