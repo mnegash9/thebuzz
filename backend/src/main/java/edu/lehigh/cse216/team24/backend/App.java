@@ -397,6 +397,7 @@ public class App {
         app.post("/logout", ctx -> {
             ctx.contentType("application/json");
             StructuredResponse resp;
+            bz.disconnect();
 
             String userEmail = ctx.header("X-User-Email");
             if (userEmail != null) {
