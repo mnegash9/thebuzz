@@ -367,7 +367,10 @@ public class App {
                     Cookie sessionCookie = new Cookie("sessionId", String.valueOf(sessionKey));
                     sessionCookie.setPath("/");
                     sessionCookie.setHttpOnly(true); // Prevents JavaScript access
-                    sessionCookie.setSecure(true); // Only sent over HTTPS
+                    sessionCookie.setDomain(ctx.host()); // Set the domain
+                    if (ctx.scheme().equals("https")) {
+                        sessionCookie.setSecure(true); // Only sent over HTTPS
+                    }
 
                     // Set the cookie in the response
                     ctx.cookie(sessionCookie);
@@ -406,13 +409,16 @@ public class App {
                     sessionIdPool.add(sessionId);
 
                     // Clear the session cookie
-                    Cookie clearCookie = new Cookie("sessionId", "");
+                    Cookie clearCookie = new Cookie("sessionId", null);
                     clearCookie.setMaxAge(0); // Immediately expires the cookie
                     clearCookie.setPath("/");
                     clearCookie.setHttpOnly(true); // Prevents JavaScript access
-                    clearCookie.setSecure(true); // Only sent over HTTPS
+                    clearCookie.setDomain(ctx.host()); // Set the domain
+                    if (ctx.scheme().equals("https")) {
+                        clearCookie.setSecure(true); // Only sent over HTTPS
+                    }
                     ctx.cookie(clearCookie);
-
+                    
                     resp = new StructuredResponse("ok", "Logged out successfully", null, null, null);
                 } else {
                     resp = new StructuredResponse("error", "No active session found", null, null, null);
