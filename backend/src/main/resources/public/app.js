@@ -57,14 +57,17 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     else {
         logoutButton.addEventListener('click', function () { return __awaiter(void 0, void 0, void 0, function () {
-            var response, error_1;
+            var email, userEmail, response, error_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
+                        email = document.querySelector('.user-email').textContent;
+                        userEmail = (email == null) ? '' : email;
                         return [4 /*yield*/, fetch("".concat(baseUrl, "/logout"), {
                                 method: 'POST',
                                 headers: {
+                                    'X-User-Email': userEmail,
                                     'Content-Type': 'application/json',
                                     'Cache-Control': 'no-store', // Prevent caching of POST requests
                                 }
@@ -74,6 +77,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         if (response.ok) {
                             localStorage.clear();
                             sessionStorage.clear();
+                            document.cookie = "sessionId=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"; // Clear the sessionId cookie
                             window.location.href = baseUrl;
                         }
                         else {
@@ -323,6 +327,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 posts[ideaId] = {
                     idea_id: ideaId,
                     idea: item.idea,
+                    idea_file: item.idea_file, // Add idea_file
                     upvote_count: item.upvote_count,
                     downvote_count: item.downvote_count,
                     user: {
@@ -337,6 +342,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 posts[ideaId].comments.push({
                     comment_id: item.comment_id,
                     body: item.body,
+                    comment_file: item.comment_file, // Add comment_file
                     user: {
                         user_id: item.commenter_id,
                         first_name: item.commenter_first,
@@ -366,10 +372,25 @@ document.addEventListener('DOMContentLoaded', function () {
         posts.forEach(function (post) {
             var postElement = document.createElement('div');
             postElement.classList.add('post');
-            postElement.innerHTML = "\n            <div class=\"post-header\">\n                <div class=\"post-user-icon\"></div>\n                <div class=\"post-username\" user-id=\"".concat(post.user.user_id, "\">\n                    ").concat(post.user.first_name, " ").concat(post.user.last_name, "\n                </div>\n            </div>\n            <div class=\"post-body\">").concat(linkify(post.idea), "</div>\n            <div class=\"vote-section\">\n                <button class=\"vote-button upvote\" data-id=\"").concat(post.idea_id, "\"><i class=\"fas fa-arrow-up\"></i></button>\n                <span class=\"vote-count upvote-count\">").concat(post.upvote_count, "</span>\n                <button class=\"vote-button downvote\" data-id=\"").concat(post.idea_id, "\"><i class=\"fas fa-arrow-down\"></i></button>\n                <span class=\"vote-count downvote-count\">").concat(post.downvote_count, "</span>\n            </div>\n            <hr>\n            <div class=\"comment-section\">\n                ").concat(post.comments.map(function (comment) { return "\n                    <div class=\"comment\" data-comment-id=\"".concat(comment.comment_id, "\">\n                        <div class=\"post-user-icon\" style=\"float: left; margin-right: 5px;\"></div>\n                        <div class=\"comment-username\" user-id=\"").concat(comment.user.user_id, "\">\n                            ").concat(comment.user.first_name, " ").concat(comment.user.last_name, "\n                        </div>\n                        <div class=\"comment-body\">").concat(linkify(comment.body), "</div>\n                        ").concat(comment.user.user_id === userId ? "<button class=\"edit-comment-button\" data-id=\"".concat(comment.comment_id, "\">Edit</button>") : '', "\n                    </div>\n                "); }).join(''), "\n                <input type=\"text\" class=\"comment-input\" placeholder=\"Add a comment...\">\n                <button class=\"add-comment-button\" data-id=\"").concat(post.idea_id, "\">Add</button>\n            </div>\n            ");
+            postElement.innerHTML = "\n            <div class=\"post-header\">\n                <div class=\"post-user-icon\"></div>\n                <div class=\"post-username\" user-id=\"".concat(post.user.user_id, "\">\n                    ").concat(post.user.first_name, " ").concat(post.user.last_name, "\n                </div>\n            </div>\n            <div class=\"post-body\">").concat(linkify(post.idea), "</div>\n            ").concat(post.idea_file ? renderFile(post.idea_file, 'idea') : '', "\n            <div class=\"vote-section\">\n                <button class=\"vote-button upvote\" data-id=\"").concat(post.idea_id, "\"><i class=\"fas fa-arrow-up\"></i></button>\n                <span class=\"vote-count upvote-count\">").concat(post.upvote_count, "</span>\n                <button class=\"vote-button downvote\" data-id=\"").concat(post.idea_id, "\"><i class=\"fas fa-arrow-down\"></i></button>\n                <span class=\"vote-count downvote-count\">").concat(post.downvote_count, "</span>\n            </div>\n            <hr>\n            <div class=\"comment-section\">\n                ").concat(post.comments.map(function (comment) { return "\n                    <div class=\"comment\" data-comment-id=\"".concat(comment.comment_id, "\">\n                        <div class=\"post-user-icon\" style=\"float: left; margin-right: 5px;\"></div>\n                        <div class=\"comment-username\" user-id=\"").concat(comment.user.user_id, "\">\n                            ").concat(comment.user.first_name, " ").concat(comment.user.last_name, "\n                        </div>\n                        <div class=\"comment-body\">").concat(linkify(comment.body), "</div>\n                        ").concat(comment.comment_file ? renderFile(comment.comment_file, 'comment') : '', "\n                        ").concat(comment.user.user_id === userId ? "<button class=\"edit-comment-button\" data-id=\"".concat(comment.comment_id, "\">Edit</button>") : '', "\n                    </div>\n                "); }).join(''), "\n                <input type=\"text\" class=\"comment-input\" placeholder=\"Add a comment...\">\n                <button class=\"add-comment-button\" data-id=\"").concat(post.idea_id, "\">Add</button>\n            </div>\n            ");
             feedContainer.appendChild(postElement);
         });
         addEventListeners();
+    }
+    /**
+     * Renders a file based on its type.
+     * @param {string} base64File - The base64 encoded file.
+     * @param {string} type - The type of the file ('idea' or 'comment').
+     * @returns {string} The HTML string to render the file.
+     */
+    function renderFile(base64File, type) {
+        var fileType = base64File.substring(0, 5);
+        if (fileType === 'iVBOR' || fileType === '/9j/4') { // Check if the file is an image (PNG or JPEG)
+            return "<div class=\"".concat(type, "-file\"><img src=\"data:image/png;base64,").concat(base64File, "\" alt=\"Attached file\"></div>");
+        }
+        else {
+            return "<div class=\"".concat(type, "-file\"><a href=\"data:application/octet-stream;base64,").concat(base64File, "\" download=\"file\">Download attached file</a></div>");
+        }
     }
     /**
      * Adds event listeners for various user interactions within the dashboard.
