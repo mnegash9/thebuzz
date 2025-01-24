@@ -316,7 +316,6 @@ public class App {
             ctx.contentType("application/json");
             StructuredResponse resp;
             if (!bz.db.mConnection.isValid(0)) {
-                bz.db.disconnect();
                 bz = new Buzz();
             }
             try {
@@ -403,7 +402,6 @@ public class App {
         app.post("/logout", ctx -> {
             ctx.contentType("application/json");
             StructuredResponse resp;
-            bz.disconnect();
 
             String userEmail = ctx.header("X-User-Email");
             if (userEmail != null) {
