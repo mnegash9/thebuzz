@@ -315,7 +315,7 @@ public class App {
         app.post("/login", ctx -> {
             ctx.contentType("application/json");
             StructuredResponse resp;
-            if (!bz.db.mConnection.isValid(0)) {
+            if (bz.db == null || !bz.db.mConnection.isValid(0)) {
                 bz = new Buzz();
             }
             try {
