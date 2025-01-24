@@ -22,10 +22,13 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         logoutButton.addEventListener('click', async () => {
             try {
+                // Get user email from the user profile
+                const email = document.querySelector('.user-email').textContent; 
+                const userEmail: string = (email == null) ? '' : email; 
                 const response = await fetch(`${baseUrl}/logout`, {
                     method: 'POST',
-
                     headers: {
+                        'X-User-Email': userEmail,
                         'Content-Type': 'application/json',
                         'Cache-Control': 'no-store', // Prevent caching of POST requests
                     }
@@ -34,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (response.ok) {
                     localStorage.clear();
                     sessionStorage.clear();
+                    document.cookie = "sessionId=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"; // Clear the sessionId cookie
                     window.location.href = baseUrl;
                 } else {
                     console.error('Logout failed. Please try again.');
@@ -217,6 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 posts[ideaId] = {
                     idea_id: ideaId,
                     idea: item.idea,
+                    idea_file: item.idea_file, // Add idea_file
                     upvote_count: item.upvote_count,
                     downvote_count: item.downvote_count,
                     user: {
@@ -232,6 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 posts[ideaId].comments.push({
                     comment_id: item.comment_id,
                     body: item.body,
+                    comment_file: item.comment_file, // Add comment_file
                     user: {
                         user_id: item.commenter_id,
                         first_name: item.commenter_first,
@@ -274,6 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
             <div class="post-body">${linkify(post.idea)}</div>
+            ${post.idea_file ? renderFile(post.idea_file, 'idea') : ''}
             <div class="vote-section">
                 <button class="vote-button upvote" data-id="${post.idea_id}"><i class="fas fa-arrow-up"></i></button>
                 <span class="vote-count upvote-count">${post.upvote_count}</span>
@@ -289,6 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${comment.user.first_name} ${comment.user.last_name}
                         </div>
                         <div class="comment-body">${linkify(comment.body)}</div>
+                        ${comment.comment_file ? renderFile(comment.comment_file, 'comment') : ''}
                         ${comment.user.user_id === userId ? `<button class="edit-comment-button" data-id="${comment.comment_id}">Edit</button>` : ''}
                     </div>
                 `).join('')}
@@ -301,6 +309,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         addEventListeners();
+    }
+
+    /**
+     * Renders a file based on its type.
+     * @param {string} base64File - The base64 encoded file.
+     * @param {string} type - The type of the file ('idea' or 'comment').
+     * @returns {string} The HTML string to render the file.
+     */
+    function renderFile(base64File, type) {
+        const fileType = base64File.substring(0, 5);
+
+        if (fileType === 'iVBOR' || fileType === '/9j/4') { // Check if the file is an image (PNG or JPEG)
+            return `<div class="${type}-file"><img src="data:image/png;base64,${base64File}" alt="Attached file"></div>`;
+        } else {
+            return `<div class="${type}-file"><a href="data:application/octet-stream;base64,${base64File}" download="file">Download attached file</a></div>`;
+        }
     }
 
     /**
