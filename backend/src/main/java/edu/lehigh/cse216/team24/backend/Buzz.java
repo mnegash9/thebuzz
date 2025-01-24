@@ -33,15 +33,12 @@ public class Buzz {
     private static IdeaMedia ideaMediaDB;
     private static CommentMedia commentMediaDB;
 
-    // private connection and database
-    private static Database bz;
-    private static Connection mConnection;
+    // public connection (to check in app) and database
+    public Database db;
 
     public Buzz() {
         // database object
-        bz = Database.getDatabase();
-        mConnection = bz.mConnection;
-
+        db = Database.getDatabase();
         userDB = new Users();
         ideaDB = new Ideas();
         commentDB = new Comments();
@@ -276,7 +273,7 @@ public class Buzz {
     public Integer getUserIdByEmail(String email) {
         String GET_USERID_FROM_EMAIL = "SELECT user_id FROM usertable WHERE email = ?;";
 
-        try (PreparedStatement stmt = mConnection.prepareStatement(GET_USERID_FROM_EMAIL)) {
+        try (PreparedStatement stmt = db.mConnection.prepareStatement(GET_USERID_FROM_EMAIL)) {
 
             stmt.setString(1, email);
 
@@ -588,12 +585,12 @@ public class Buzz {
                     comment_media.comment_media_id
                 """;
 
-        try (PreparedStatement stmt = mConnection.prepareStatement(SQL_CREATE_VIEW)) {
+        try (PreparedStatement stmt = db.mConnection.prepareStatement(SQL_CREATE_VIEW)) {
             stmt.execute();
         } catch (SQLException e) {
             System.err.println("Error creating dashboard view: " + e.getMessage());
             e.printStackTrace();
-            bz.disconnect(); // Maintaining the existing disconnect behavior
+            db.disconnect(); // Maintaining the existing disconnect behavior
         }
     }
 
@@ -615,7 +612,7 @@ public class Buzz {
                     FROM dashboard_view
                 """;
 
-        try (PreparedStatement stmt = mConnection.prepareStatement(query);
+        try (PreparedStatement stmt = db.mConnection.prepareStatement(query);
                 ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
@@ -674,12 +671,12 @@ public class Buzz {
                     ON c.comment_id = cm.comment_id AND cm.validcommentmedia = true;
                                 """;
 
-        try (PreparedStatement stmt = mConnection.prepareStatement(SQL_CREATE_VIEW)) {
+        try (PreparedStatement stmt = db.mConnection.prepareStatement(SQL_CREATE_VIEW)) {
             stmt.execute();
         } catch (SQLException e) {
             System.err.println("Error creating comments view: " + e.getMessage());
             e.printStackTrace();
-            bz.disconnect(); // Maintaining the existing disconnect behavior
+            db.disconnect(); // Maintaining the existing disconnect behavior
         }
     }
 
@@ -699,7 +696,7 @@ public class Buzz {
                     WHERE idea_id = ?;
                 """;
 
-        try (PreparedStatement stmt = mConnection.prepareStatement(query)) {
+        try (PreparedStatement stmt = db.mConnection.prepareStatement(query)) {
             // setting the parameter and executing query
             stmt.setInt(1, idea_id);
             ResultSet rs = stmt.executeQuery();

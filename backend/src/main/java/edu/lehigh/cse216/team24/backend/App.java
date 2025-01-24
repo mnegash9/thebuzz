@@ -315,7 +315,10 @@ public class App {
         app.post("/login", ctx -> {
             ctx.contentType("application/json");
             StructuredResponse resp;
-            bz = new Buzz();
+            if (!bz.db.mConnection.isValid(0)) {
+                bz.db.disconnect();
+                bz = new Buzz();
+            }
             try {
                 // Parse request body
                 SimpleRequestLogin req = gson.fromJson(ctx.body(), SimpleRequestLogin.class);
@@ -418,7 +421,7 @@ public class App {
                         clearCookie.setSecure(true); // Only sent over HTTPS
                     }
                     ctx.cookie(clearCookie);
-                    
+
                     resp = new StructuredResponse("ok", "Logged out successfully", null, null, null);
                 } else {
                     resp = new StructuredResponse("error", "No active session found", null, null, null);
