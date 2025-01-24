@@ -410,7 +410,7 @@ public class App {
                     sessionIdPool.add(sessionId);
 
                     // Clear the session cookie
-                    Cookie clearCookie = new Cookie("sessionId", null);
+                    Cookie clearCookie = new Cookie("sessionId", "");
                     clearCookie.setMaxAge(0); // Immediately expires the cookie
                     clearCookie.setPath("/");
                     clearCookie.setHttpOnly(true); // Prevents JavaScript access
