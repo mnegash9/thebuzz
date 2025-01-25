@@ -38,7 +38,7 @@ import java.util.concurrent.TimeoutException;
 public class App {
 
     /* Instance of the Buzz app */
-    static Buzz bz = new Buzz();
+    public static Buzz bz = new Buzz();
 
     // OAUTH IMPLEMENTATION
     // first some final variables to reduce refactoring later
@@ -316,7 +316,7 @@ public class App {
             ctx.contentType("application/json");
             StructuredResponse resp;
             if (bz.db == null || !bz.db.mConnection.isValid(0)) {
-                bz = new Buzz();
+                bz.db = Database.getDatabase();
             }
             try {
                 // Parse request body
