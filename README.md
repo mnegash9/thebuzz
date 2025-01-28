@@ -4,7 +4,7 @@ This is a team repository.  It is intended for use during phase 1 and beyond.
 ## Brief Description of Release
 This release includes all the functionality from last phase with some additional features. Users can post "ideas" and can upvote/downvote on other's ideas. OAuth is 
 implemented for unique user identification and profiles. Users are also able to upload links and files and attach them to their ideas and comments.
-Missing functionality: Editing posted comments on web frontend, media viewing on web frontend, and attaching media in comments on web.
+Missing functionality: Editing posted comments on web frontend and attaching media in comments on web.
 
 ## Instructions on building and running backend locally and on dokku
 1. Go to the root of the repository
