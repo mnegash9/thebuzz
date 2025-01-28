@@ -72,6 +72,16 @@ public class Buzz {
         userDB.dropTable();
     }
 
+    void refreshConnection(){
+        userDB.refreshConnection();
+        ideaDB.refreshConnection();
+        commentDB.refreshConnection();
+        upvote.refreshConnection();
+        downvote.refreshConnection();
+        ideaMediaDB.refreshConnection();
+        commentMediaDB.refreshConnection();
+    }
+
     /**
      * Add a user to the user database
      * 

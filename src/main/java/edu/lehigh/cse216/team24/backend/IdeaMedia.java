@@ -28,6 +28,13 @@ public class IdeaMedia {
         ideaMediaDB = Buzz.db;
     }
 
+    /***
+     * Refresh our database connection everytime upstream connection is stale (in App.java)
+     */
+    void refreshConnection(){
+        ideaMediaDB = Buzz.db;
+    }
+
     /**
      * RowData is the data we envision stored in a row on the database. It is
      * coupled with each entry in the databse.

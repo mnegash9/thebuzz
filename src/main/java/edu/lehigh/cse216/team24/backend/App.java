@@ -317,6 +317,7 @@ public class App {
             StructuredResponse resp;
             if (Buzz.db == null || !Buzz.db.mConnection.isValid(0)) {
                 Buzz.db = Database.getDatabase();
+                bz.refreshConnection();
             }
             try {
                 // Parse request body

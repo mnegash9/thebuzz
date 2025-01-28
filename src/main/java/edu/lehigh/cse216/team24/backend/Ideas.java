@@ -6,8 +6,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
-/** 
- * The Ideas class manages idea-related database operations including creation, 
+/**
+ * The Ideas class manages idea-related database operations including creation,
  * reading, updating, and deleting ideas from the database.
  */
 public class Ideas {
@@ -25,6 +25,14 @@ public class Ideas {
     }
 
     public Ideas() {
+        ideaDB = Buzz.db;
+    }
+
+    /***
+     * Refresh our database connection everytime upstream connection is stale (in
+     * App.java)
+     */
+    void refreshConnection() {
         ideaDB = Buzz.db;
     }
 
@@ -381,7 +389,8 @@ public class Ideas {
             " FROM %s;", ideaTableName);
 
     /**
-     * safely performs mSelectAllIdeas = ideaDB.mConnection.prepareStatement("SELECT id,
+     * safely performs mSelectAllIdeas = ideaDB.mConnection.prepareStatement("SELECT
+     * id,
      * idea
      * FROM tblData");
      * 
@@ -461,7 +470,8 @@ public class Ideas {
             " WHERE idea_id=? ;", ideaTableName);
 
     /**
-     * safely performs mSelectOne = ideaDB.mConnection.prepareStatement("SELECT * from
+     * safely performs mSelectOne = ideaDB.mConnection.prepareStatement("SELECT *
+     * from
      * tblData WHERE id=?");
      * 
      * @return true if one row is selected, false otherwise.
