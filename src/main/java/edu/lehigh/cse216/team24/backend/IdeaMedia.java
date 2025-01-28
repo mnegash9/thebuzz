@@ -1,6 +1,5 @@
 package edu.lehigh.cse216.team24.backend;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -17,24 +16,16 @@ public class IdeaMedia {
     // everywhere
     private static String ideaMediaTableName = "ideaMediaTable";
 
-    /*
-     * Connection to db. An open connection if non-null, null otherwise. And
-     * database object which encloses the new connection passed from Database class
-     */
-
-    private Connection mConnection;
     private Database ideaMediaDB;
 
     // Parameterized constructor allowing us to pass in a ideaMediaTableName
     public IdeaMedia(String n) {
-        ideaMediaDB = Database.getDatabase();
-        mConnection = ideaMediaDB.mConnection;
+        ideaMediaDB = Buzz.db;
         ideaMediaTableName = n;
     }
 
     public IdeaMedia() {
-        ideaMediaDB = Database.getDatabase();
-        mConnection = ideaMediaDB.mConnection;
+        ideaMediaDB = Buzz.db;
     }
 
     /**
@@ -54,14 +45,14 @@ public class IdeaMedia {
     private static final String SQL_DROP_TABLE = String.format("DROP TABLE IF EXISTS %s CASCADE", ideaMediaTableName);
 
     /**
-     * safely performs mDropTable = mConnection.prepareStatement("DROP TABLE
+     * safely performs mDropTable = ideaMediaDB.mConnection.prepareStatement("DROP TABLE
      * tblData");
      * 
      * @return true if table is dropped, false otherwise.
      */
     private boolean init_mDropTable() {
         try {
-            mDropTable = mConnection.prepareStatement(SQL_DROP_TABLE);
+            mDropTable = ideaMediaDB.mConnection.prepareStatement(SQL_DROP_TABLE);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mDropTable");
             System.err.println("Using SQL: " + SQL_DROP_TABLE);
@@ -100,7 +91,7 @@ public class IdeaMedia {
                     " VALUES (default, ?, ?, ?, ?, ?);", ideaMediaTableName);;
 
     /**
-     * safely performs mInsertOne = mConnection.prepareStatement("INSERT INTO
+     * safely performs mInsertOne = ideaMediaDB.mConnection.prepareStatement("INSERT INTO
      * tblData VALUES (default, ?, ?)");
      * 
      * @return true if item is inserted into DB, false otherwise.
@@ -112,7 +103,7 @@ public class IdeaMedia {
                 mInsertOne.close();
             }
             // Create new prepared statement
-            mInsertOne = mConnection.prepareStatement(SQL_INSERT_ONE);
+            mInsertOne = ideaMediaDB.mConnection.prepareStatement(SQL_INSERT_ONE);
             return true;
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mInsertOne");
@@ -196,7 +187,7 @@ public class IdeaMedia {
     private boolean init_mUpdateTimestamp() {
         // return true on success, false otherwise
         try {
-            mUpdateTimestamp = mConnection.prepareStatement(SQL_UPDATE_TIMESTAMP);
+            mUpdateTimestamp = ideaMediaDB.mConnection.prepareStatement(SQL_UPDATE_TIMESTAMP);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mUpdateTimestamp");
             System.err.println("Using SQL: " + SQL_UPDATE_TIMESTAMP);
@@ -229,7 +220,7 @@ public class IdeaMedia {
     }
 
     /**
-     * Function to disconnect mConnection using database class
+     * Function to disconnect ideaMediaDB.mConnection using database class
      * 
      * @return boolean true if disconnected cleanly, false if not
      */

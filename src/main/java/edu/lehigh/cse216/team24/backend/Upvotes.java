@@ -1,6 +1,5 @@
 package edu.lehigh.cse216.team24.backend;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,24 +13,17 @@ public class Upvotes {
     // Global variable to allow us to change name of the table in one place,
     // everywhere
     private static String upvoteTableName = "UpvoteTable";
-
-    /**
-     * Connection to db. An open connection if non-null, null otherwise. And
-     * database object which encloses the new connection passed from Database class
-     */
-    private Connection mConnection;
+    
     private Database upvoteDB;
 
     // Parameterized constructor allowing us to pass in a table name
     public Upvotes(String n) {
-        upvoteDB = Database.getDatabase();
-        mConnection = upvoteDB.mConnection;
+        upvoteDB = Buzz.db;
         upvoteTableName = n;
     }
 
     public Upvotes() {
-        upvoteDB = Database.getDatabase();
-        mConnection = upvoteDB.mConnection;
+        upvoteDB = Buzz.db;
     }
 
     /**
@@ -56,13 +48,13 @@ public class Upvotes {
 
     /**
      * safely performs mCreateTable =
-     * mConnection.prepareStatement(SQL_CREATE_TABLE);
+     * upvoteDB.mConnection.prepareStatement(SQL_CREATE_TABLE);
      * 
      * @return true if table is created, false otherwise.
      */
     private boolean init_mCreateTable() {
         try {
-            mCreateTable = mConnection.prepareStatement(SQL_CREATE_TABLE);
+            mCreateTable = upvoteDB.mConnection.prepareStatement(SQL_CREATE_TABLE);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mCreateTable");
             System.err.println("Using SQL: " + SQL_CREATE_TABLE);
@@ -95,14 +87,14 @@ public class Upvotes {
     private static final String SQL_DROP_TABLE = String.format("DROP TABLE IF EXISTS %s CASCADE", upvoteTableName);
 
     /**
-     * safely performs mDropTable = mConnection.prepareStatement("DROP TABLE
+     * safely performs mDropTable = upvoteDB.mConnection.prepareStatement("DROP TABLE
      * tblData");
      * 
      * @return true if table is dropped, false otherwise.
      */
     private boolean init_mDropTable() {
         try {
-            mDropTable = mConnection.prepareStatement(SQL_DROP_TABLE);
+            mDropTable = upvoteDB.mConnection.prepareStatement(SQL_DROP_TABLE);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mDropTable");
             System.err.println("Using SQL: " + SQL_DROP_TABLE);
@@ -141,14 +133,14 @@ public class Upvotes {
                     " VALUES (default, ?, ?)", upvoteTableName);
 
     /**
-     * safely performs mInsertUpvote = mConnection.prepareStatement("INSERT INTO
+     * safely performs mInsertUpvote = upvoteDB.mConnection.prepareStatement("INSERT INTO
      * tblData VALUES (default, ?, ?)");
      * 
      * @return true if item is inserted into DB, false otherwise.
      */
     private boolean init_mInsertOne() {
         try {
-            mInsertUpvote = mConnection.prepareStatement(SQL_INSERT_ONE);
+            mInsertUpvote = upvoteDB.mConnection.prepareStatement(SQL_INSERT_ONE);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mInsertUpvote");
             System.err.println("Using SQL: " + SQL_INSERT_ONE);
@@ -221,7 +213,7 @@ public class Upvotes {
             " WHERE user_id = ? AND idea_id = ?", upvoteTableName);
 
     /**
-     * safely performs mDeleteOne = mConnection.prepareStatement(SQL_DELETE_ONE);
+     * safely performs mDeleteOne = upvoteDB.mConnection.prepareStatement(SQL_DELETE_ONE);
      * 
      * @return true if row is deleted from DB, false otherwise.
      */
@@ -232,7 +224,7 @@ public class Upvotes {
                 mDeleteOne.close();
             }
             // Create new prepared statement
-            mDeleteOne = mConnection.prepareStatement(SQL_DELETE_ONE);
+            mDeleteOne = upvoteDB.mConnection.prepareStatement(SQL_DELETE_ONE);
             return true;
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mDeleteOne");
@@ -302,7 +294,7 @@ public class Upvotes {
                     " FROM %s WHERE user_id = ? AND idea_id = ?;", upvoteTableName);
 
     /**
-     * safely performs mSelectAll = mConnection.prepareStatement("SELECT id, idea
+     * safely performs mSelectAll = upvoteDB.mConnection.prepareStatement("SELECT id, idea
      * FROM tblData");
      * 
      * @return true if all rows can be selected, false otherwise.
@@ -315,7 +307,7 @@ public class Upvotes {
                 mHasUpvote.close();
             }
             // Create new prepared statement
-            mHasUpvote = mConnection.prepareStatement(SQL_SELECT_UPVOTE_CHECK);
+            mHasUpvote = upvoteDB.mConnection.prepareStatement(SQL_SELECT_UPVOTE_CHECK);
             return true;
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mHasUpvote");
@@ -393,7 +385,7 @@ public class Upvotes {
             " FROM %s;", upvoteTableName);
 
     /**
-     * safely performs mSelectAll = mConnection.prepareStatement("SELECT id, idea
+     * safely performs mSelectAll = upvoteDB.mConnection.prepareStatement("SELECT id, idea
      * FROM tblData");
      * 
      * @return true if all rows can be selected, false otherwise.
@@ -401,7 +393,7 @@ public class Upvotes {
     private boolean init_mSelectAll() {
         // return true on success, false otherwise
         try {
-            mSelectAllUpvotes = mConnection.prepareStatement(SQL_SELECT_ALL);
+            mSelectAllUpvotes = upvoteDB.mConnection.prepareStatement(SQL_SELECT_ALL);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mSelectAllUpvotes");
             System.err.println("Using SQL: " + SQL_SELECT_ALL);

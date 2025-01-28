@@ -1,6 +1,5 @@
 package edu.lehigh.cse216.team24.backend;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -9,24 +8,17 @@ import java.util.ArrayList;
 public class Downvotes {
 
     private static String downvoteTableName = "DownvoteTable";
-
-    /**
-     * Connection to db. An open connection if non-null, null otherwise. And
-     * database object which encloses the new connection passed from Database class
-     */
-    private Connection mConnection;
+ 
     private Database downvoteDB;
 
     // Parameterized constructor allowing us to pass in a table name
     public Downvotes(String n) {
-        downvoteDB = Database.getDatabase();
-        mConnection = downvoteDB.mConnection;
+        downvoteDB = Buzz.db;
         downvoteTableName = n;
     }
 
     public Downvotes() {
-        downvoteDB = Database.getDatabase();
-        mConnection = downvoteDB.mConnection;
+        downvoteDB = Buzz.db;
     }
 
     /**
@@ -52,13 +44,13 @@ public class Downvotes {
 
     /**
      * safely performs mCreateTable =
-     * mConnection.prepareStatement(SQL_CREATE_TABLE);
+     * downvoteDB.mConnection.prepareStatement(SQL_CREATE_TABLE);
      * 
      * @return true if table is created, false otherwise.
      */
     private boolean init_mCreateTable() {
         try {
-            mCreateTable = mConnection.prepareStatement(SQL_CREATE_TABLE);
+            mCreateTable = downvoteDB.mConnection.prepareStatement(SQL_CREATE_TABLE);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mCreateTable");
             System.err.println("Using SQL: " + SQL_CREATE_TABLE);
@@ -91,14 +83,14 @@ public class Downvotes {
     private static final String SQL_DROP_TABLE = String.format("DROP TABLE IF EXISTS %s CASCADE", downvoteTableName);
 
     /**
-     * safely performs mDropTable = mConnection.prepareStatement("DROP TABLE
+     * safely performs mDropTable = downvoteDB.mConnection.prepareStatement("DROP TABLE
      * tblData");
      * 
      * @return true if table is dropped, false otherwise.
      */
     private boolean init_mDropTable() {
         try {
-            mDropTable = mConnection.prepareStatement(SQL_DROP_TABLE);
+            mDropTable = downvoteDB.mConnection.prepareStatement(SQL_DROP_TABLE);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mDropTable");
             System.err.println("Using SQL: " + SQL_DROP_TABLE);
@@ -137,7 +129,7 @@ public class Downvotes {
                     " VALUES (default, ?, ?)", downvoteTableName);
 
     /**
-     * safely performs mInsertUpvote = mConnection.prepareStatement("INSERT INTO
+     * safely performs mInsertUpvote = downvoteDB.mConnection.prepareStatement("INSERT INTO
      * tblData VALUES (default, ?, ?)");
      * 
      * @return true if item is inserted into DB, false otherwise.
@@ -149,7 +141,7 @@ public class Downvotes {
                 mInsertDownvote.close();
             }
             // Create new prepared statement
-            mInsertDownvote = mConnection.prepareStatement(SQL_INSERT_ONE);
+            mInsertDownvote = downvoteDB.mConnection.prepareStatement(SQL_INSERT_ONE);
             return true;
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mInsertDownvote");
@@ -221,13 +213,13 @@ public class Downvotes {
             " WHERE user_id = ? AND idea_id = ?", downvoteTableName);
 
     /**
-     * safely performs mDeleteOne = mConnection.prepareStatement(SQL_DELETE_ONE);
+     * safely performs mDeleteOne = downvoteDB.mConnection.prepareStatement(SQL_DELETE_ONE);
      * 
      * @return true if row is deleted from DB, false otherwise.
      */
     private boolean init_mDeleteOne() {
         try {
-            mDeleteOne = mConnection.prepareStatement(SQL_DELETE_ONE);
+            mDeleteOne = downvoteDB.mConnection.prepareStatement(SQL_DELETE_ONE);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mDeleteOne");
             System.err.println("Using SQL: " + SQL_DELETE_ONE);
@@ -295,7 +287,7 @@ public class Downvotes {
             " FROM %s WHERE idea_id = ?;", downvoteTableName);
 
     /**
-     * safely performs mSelectAll = mConnection.prepareStatement("SELECT id, idea
+     * safely performs mSelectAll = downvoteDB.mConnection.prepareStatement("SELECT id, idea
      * FROM tblData");
      * 
      * @return true if all rows can be selected, false otherwise.
@@ -303,7 +295,7 @@ public class Downvotes {
     private boolean init_mSelectCount() {
         // return true on success, false otherwise
         try {
-            mCountDislikesByIdea = mConnection.prepareStatement(SQL_SELECT_COUNT);
+            mCountDislikesByIdea = downvoteDB.mConnection.prepareStatement(SQL_SELECT_COUNT);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mSelectAll");
             System.err.println("Using SQL: " + SQL_SELECT_COUNT);
@@ -374,7 +366,7 @@ public class Downvotes {
                     " FROM %s WHERE user_id = ? AND idea_id = ?;", downvoteTableName);
 
     /**
-     * safely performs mSelectAll = mConnection.prepareStatement("SELECT id, idea
+     * safely performs mSelectAll = downvoteDB.mConnection.prepareStatement("SELECT id, idea
      * FROM tblData");
      * 
      * @return true if all rows can be selected, false otherwise.
@@ -382,7 +374,7 @@ public class Downvotes {
     private boolean init_mSelectDownvoteCheck() {
         // return true on success, false otherwise
         try {
-            mHasDownvote = mConnection.prepareStatement(SQL_SELECT_DOWNVOTE_CHECK);
+            mHasDownvote = downvoteDB.mConnection.prepareStatement(SQL_SELECT_DOWNVOTE_CHECK);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mHasDownvote");
             System.err.println("Using SQL: " + SQL_SELECT_DOWNVOTE_CHECK);
@@ -451,7 +443,7 @@ public class Downvotes {
             " FROM %s;", downvoteTableName);
 
     /**
-     * safely performs mSelectAll = mConnection.prepareStatement("SELECT id, idea
+     * safely performs mSelectAll = downvoteDB.mConnection.prepareStatement("SELECT id, idea
      * FROM tblData");
      * 
      * @return true if all rows can be selected, false otherwise.
@@ -459,7 +451,7 @@ public class Downvotes {
     private boolean init_mSelectAll() {
         // return true on success, false otherwise
         try {
-            mSelectAllDownvotes = mConnection.prepareStatement(SQL_SELECT_ALL);
+            mSelectAllDownvotes = downvoteDB.mConnection.prepareStatement(SQL_SELECT_ALL);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mSelectAllDownvotes");
             System.err.println("Using SQL: " + SQL_SELECT_ALL);

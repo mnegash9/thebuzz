@@ -1,6 +1,5 @@
 package edu.lehigh.cse216.team24.backend;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -20,19 +19,23 @@ public class Users {
      * Connection to db. An open connection if non-null, null otherwise. And
      * database object which encloses the new connection passed from Database class
      */
-    private Connection mConnection;
     private Database userDB;
 
     // Parameterized constructor allowing us to pass in a userTableName
     public Users(String n) {
-        userDB = Database.getDatabase();
-        mConnection = userDB.mConnection;
+        userDB = Buzz.db;
         userTableName = n;
     }
 
     public Users() {
-        userDB = Database.getDatabase();
-        mConnection = userDB.mConnection;
+        userDB = Buzz.db;
+    }
+
+    /***
+     * Refresh our database connection everytime upstream connection is stale (in App.java)
+     */
+    void refreshConnection(){
+        userDB = Buzz.db;
     }
 
     /**
@@ -64,13 +67,13 @@ public class Users {
 
     /**
      * safely performs mCreateTable =
-     * mConnection.prepareStatement(SQL_CREATE_TABLE);
+     * userDB.mConnection.prepareStatement(SQL_CREATE_TABLE);
      * 
      * @return true if table is created, false otherwise.
      */
     private boolean init_mCreateTable() {
         try {
-            mCreateTable = mConnection.prepareStatement(SQL_CREATE_TABLE);
+            mCreateTable = userDB.mConnection.prepareStatement(SQL_CREATE_TABLE);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mCreateTable");
             System.err.println("Using SQL: " + SQL_CREATE_TABLE);
@@ -103,14 +106,14 @@ public class Users {
     private static final String SQL_DROP_TABLE = String.format("DROP TABLE IF EXISTS %s CASCADE", userTableName);
 
     /**
-     * safely performs mDropTable = mConnection.prepareStatement("DROP TABLE
+     * safely performs mDropTable = userDB.mConnection.prepareStatement("DROP TABLE
      * tblData");
      * 
      * @return true if table is dropped, false otherwise.
      */
     private boolean init_mDropTable() {
         try {
-            mDropTable = mConnection.prepareStatement(SQL_DROP_TABLE);
+            mDropTable = userDB.mConnection.prepareStatement(SQL_DROP_TABLE);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mDropTable");
             System.err.println("Using SQL: " + SQL_DROP_TABLE);
@@ -149,7 +152,7 @@ public class Users {
                     " VALUES (default, ?, ?, ?);", userTableName);;
 
     /**
-     * safely performs mInsertOne = mConnection.prepareStatement("INSERT INTO
+     * safely performs mInsertOne = userDB.mConnection.prepareStatement("INSERT INTO
      * tblData VALUES (default, ?, ?)");
      * 
      * @return true if item is inserted into DB, false otherwise.
@@ -161,7 +164,7 @@ public class Users {
                 mInsertOne.close();
             }
             // Create new prepared statement
-            mInsertOne = mConnection.prepareStatement(SQL_INSERT_ONE);
+            mInsertOne = userDB.mConnection.prepareStatement(SQL_INSERT_ONE);
             return true;
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mInsertOne");
@@ -242,7 +245,7 @@ public class Users {
     private boolean init_mUpdateGender() {
         // return true on success, false otherwise
         try {
-            mUpdateGender = mConnection.prepareStatement(SQL_UPDATE_GENDER);
+            mUpdateGender = userDB.mConnection.prepareStatement(SQL_UPDATE_GENDER);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mUpdateGender");
             System.err.println("Using SQL: " + SQL_UPDATE_GENDER);
@@ -292,7 +295,7 @@ public class Users {
     private boolean init_mUpdateSexualOrient() {
         // return true on success, false otherwise
         try {
-            mUpdateSexualOrient = mConnection.prepareStatement(SQL_UPDATE_SEXUAL_ORIENT);
+            mUpdateSexualOrient = userDB.mConnection.prepareStatement(SQL_UPDATE_SEXUAL_ORIENT);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mUpdateSexualOrient");
             System.err.println("Using SQL: " + SQL_UPDATE_SEXUAL_ORIENT);
@@ -342,7 +345,7 @@ public class Users {
     private boolean init_mUpdateNote() {
         // return true on success, false otherwise
         try {
-            mUpdateNote = mConnection.prepareStatement(SQL_UPDATE_NOTE);
+            mUpdateNote = userDB.mConnection.prepareStatement(SQL_UPDATE_NOTE);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mUpdateNote");
             System.err.println("Using SQL: " + SQL_UPDATE_NOTE);
@@ -394,7 +397,7 @@ public class Users {
             if (mUpdateStatus != null) {
                 mUpdateStatus.close();
             }
-            mUpdateStatus = mConnection.prepareStatement(SQL_UPDATE_STATUS);
+            mUpdateStatus = userDB.mConnection.prepareStatement(SQL_UPDATE_STATUS);
             return true;
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mUpdateStatus");
@@ -467,7 +470,7 @@ public class Users {
             " FROM %s;", userTableName);
 
     /**
-     * safely performs mSelectAllUsers = mConnection.prepareStatement("SELECT id,
+     * safely performs mSelectAllUsers = userDB.mConnection.prepareStatement("SELECT id,
      * idea
      * FROM tblData");
      * 
@@ -476,7 +479,7 @@ public class Users {
     private boolean init_mSelectAll() {
         // return true on success, false otherwise
         try {
-            mSelectAllUsers = mConnection.prepareStatement(SQL_SELECT_ALL_TBLDATA);
+            mSelectAllUsers = userDB.mConnection.prepareStatement(SQL_SELECT_ALL_TBLDATA);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mSelectAllUsers");
             System.err.println("Using SQL: " + SQL_SELECT_ALL_TBLDATA);
@@ -553,14 +556,14 @@ public class Users {
             " WHERE user_id=? ;", userTableName);
 
     /**
-     * safely performs mSelectOne = mConnection.prepareStatement("SELECT * from
+     * safely performs mSelectOne = userDB.mConnection.prepareStatement("SELECT * from
      * tblData WHERE id=?");
      * 
      * @return true if one row is selected, false otherwise.
      */
     private boolean init_mSelectOne() {
         try {
-            mSelectOne = mConnection.prepareStatement(SQL_SELECT_ONE_TBLDATA);
+            mSelectOne = userDB.mConnection.prepareStatement(SQL_SELECT_ONE_TBLDATA);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mSelectOne");
             System.err.println("Using SQL: " + SQL_SELECT_ONE_TBLDATA);
@@ -689,7 +692,7 @@ public class Users {
      */
     private boolean init_profileUpdate() {
         try {
-            profileUpdate = mConnection.prepareStatement(PROFILE_SQL_UPDATE_USERTABLE);
+            profileUpdate = userDB.mConnection.prepareStatement(PROFILE_SQL_UPDATE_USERTABLE);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: profileUpdate");
             System.err.println("Using SQL: " + PROFILE_SQL_UPDATE_USERTABLE);

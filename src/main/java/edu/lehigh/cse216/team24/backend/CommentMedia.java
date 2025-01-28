@@ -1,6 +1,5 @@
 package edu.lehigh.cse216.team24.backend;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -12,23 +11,16 @@ public class CommentMedia {
     // everywhere
     private static String commentMediaTableName = "commentMediaTable";
 
-    /**
-     * Connection to db. An open connection if non-null, null otherwise. And
-     * database object which encloses the new connection passed from Database class
-     */
-    private Connection mConnection;
     private Database commentMediaDB;
 
     // Parameterized constructor allowing us to pass in a commentMediaTableName
     public CommentMedia(String n) {
-        commentMediaDB = Database.getDatabase();
-        mConnection = commentMediaDB.mConnection;
+        commentMediaDB = Buzz.db;
         commentMediaTableName = n;
     }
 
     public CommentMedia() {
-        commentMediaDB = Database.getDatabase();
-        mConnection = commentMediaDB.mConnection;
+        commentMediaDB = Buzz.db;
     }
 
     /**
@@ -49,14 +41,14 @@ public class CommentMedia {
             commentMediaTableName);
 
     /**
-     * safely performs mDropTable = mConnection.prepareStatement("DROP TABLE
+     * safely performs mDropTable = commentMediaDB.mConnection.prepareStatement("DROP TABLE
      * tblData");
      * 
      * @return true if table is dropped, false otherwise.
      */
     private boolean init_mDropTable() {
         try {
-            mDropTable = mConnection.prepareStatement(SQL_DROP_TABLE);
+            mDropTable = commentMediaDB.mConnection.prepareStatement(SQL_DROP_TABLE);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mDropTable");
             System.err.println("Using SQL: " + SQL_DROP_TABLE);
@@ -95,7 +87,7 @@ public class CommentMedia {
                     " VALUES (default, ?, ?, ?, ?, ?);", commentMediaTableName);;
 
     /**
-     * safely performs mInsertOne = mConnection.prepareStatement("INSERT INTO
+     * safely performs mInsertOne = commentMediaDB.mConnection.prepareStatement("INSERT INTO
      * tblData VALUES (default, ?, ?)");
      * 
      * @return true if item is inserted into DB, false otherwise.
@@ -107,7 +99,7 @@ public class CommentMedia {
                 mInsertOne.close();
             }
             // Create new prepared statement
-            mInsertOne = mConnection.prepareStatement(SQL_INSERT_ONE);
+            mInsertOne = commentMediaDB.mConnection.prepareStatement(SQL_INSERT_ONE);
             return true;
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mInsertOne");
@@ -192,7 +184,7 @@ public class CommentMedia {
     private boolean init_mUpdateTimestamp() {
         // return true on success, false otherwise
         try {
-            mUpdateTimestamp = mConnection.prepareStatement(SQL_UPDATE_TIMESTAMP);
+            mUpdateTimestamp = commentMediaDB.mConnection.prepareStatement(SQL_UPDATE_TIMESTAMP);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mUpdateTimestamp");
             System.err.println("Using SQL: " + SQL_UPDATE_TIMESTAMP);

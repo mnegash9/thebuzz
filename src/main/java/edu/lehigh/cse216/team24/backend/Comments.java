@@ -1,6 +1,5 @@
 package edu.lehigh.cse216.team24.backend;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,23 +11,16 @@ public class Comments {
     // everywhere
     private static String commentTableName = "CommentTable";
 
-    /**
-     * Connection to db. An open connection if non-null, null otherwise. And
-     * database object which encloses the new connection passed from Database class
-     */
-    private Connection mConnection;
     private Database commentDB;
 
     // Parameterized constructor allowing us to pass in a userTableName
     public Comments(String n) {
-        commentDB = Database.getDatabase();
-        mConnection = commentDB.mConnection;
+        commentDB = Buzz.db;
         commentTableName = n;
     }
 
     public Comments() {
-        commentDB = Database.getDatabase();
-        mConnection = commentDB.mConnection;
+        commentDB = Buzz.db;
     }
 
     /**
@@ -52,13 +44,13 @@ public class Comments {
 
     /**
      * safely performs mCreateTable =
-     * mConnection.prepareStatement(SQL_CREATE_TABLE);
+     * commentDB.mConnection.prepareStatement(SQL_CREATE_TABLE);
      * 
      * @return true if table is created, false otherwise.
      */
     private boolean init_mCreateTable() {
         try {
-            mCreateTable = mConnection.prepareStatement(SQL_CREATE_TABLE);
+            mCreateTable = commentDB.mConnection.prepareStatement(SQL_CREATE_TABLE);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mCreateTable");
             System.err.println("Using SQL: " + SQL_CREATE_TABLE);
@@ -91,14 +83,14 @@ public class Comments {
     private static final String SQL_DROP_TABLE = String.format("DROP TABLE IF EXISTS %s CASCADE", commentTableName);
 
     /**
-     * safely performs mDropTable = mConnection.prepareStatement("DROP TABLE
+     * safely performs mDropTable = commentDB.mConnection.prepareStatement("DROP TABLE
      * tblData");
      * 
      * @return true if table is dropped, false otherwise.
      */
     private boolean init_mDropTable() {
         try {
-            mDropTable = mConnection.prepareStatement(SQL_DROP_TABLE);
+            mDropTable = commentDB.mConnection.prepareStatement(SQL_DROP_TABLE);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mDropTable");
             System.err.println("Using SQL: " + SQL_DROP_TABLE);
@@ -137,7 +129,7 @@ public class Comments {
                     " VALUES (default, ?, ?, ?);", commentTableName);;
 
     /**
-     * safely performs mInsertOne = mConnection.prepareStatement("INSERT INTO
+     * safely performs mInsertOne = commentDB.mConnection.prepareStatement("INSERT INTO
      * tblData VALUES (default, ?, ?)");
      * 
      * @return true if item is inserted into DB, false otherwise.
@@ -149,7 +141,7 @@ public class Comments {
                 mInsertOne.close();
             }
             // Create new prepared statement
-            mInsertOne = mConnection.prepareStatement(SQL_INSERT_ONE, Statement.RETURN_GENERATED_KEYS);
+            mInsertOne = commentDB.mConnection.prepareStatement(SQL_INSERT_ONE, Statement.RETURN_GENERATED_KEYS);
             return true;
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mInsertOne");
@@ -208,7 +200,7 @@ public class Comments {
     private boolean init_mUpdateNote() {
         // return true on success, false otherwise
         try {
-            mUpdateComment = mConnection.prepareStatement(SQL_UPDATE_NOTE);
+            mUpdateComment = commentDB.mConnection.prepareStatement(SQL_UPDATE_NOTE);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mUpdateComment");
             System.err.println("Using SQL: " + SQL_UPDATE_NOTE);
@@ -258,7 +250,7 @@ public class Comments {
     private boolean init_mAddLink() {
         // return true on success, false otherwise
         try {
-            mAddLink = mConnection.prepareStatement(SQL_ADD_LINK);
+            mAddLink = commentDB.mConnection.prepareStatement(SQL_ADD_LINK);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mAddLink");
             System.err.println("Using SQL: " + SQL_ADD_LINK);
@@ -327,7 +319,7 @@ public class Comments {
             " FROM %s;", commentTableName);
 
     /**
-     * safely performs mSelectAll = mConnection.prepareStatement("SELECT id, idea
+     * safely performs mSelectAll = commentDB.mConnection.prepareStatement("SELECT id, idea
      * FROM tblData");
      * 
      * @return true if all rows can be selected, false otherwise.
@@ -335,7 +327,7 @@ public class Comments {
     private boolean init_mSelectAll() {
         // return true on success, false otherwise
         try {
-            mSelectAll = mConnection.prepareStatement(SQL_SELECT_ALL_TBLDATA);
+            mSelectAll = commentDB.mConnection.prepareStatement(SQL_SELECT_ALL_TBLDATA);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mSelectAll");
             System.err.println("Using SQL: " + SQL_SELECT_ALL_TBLDATA);
@@ -383,14 +375,14 @@ public class Comments {
             " WHERE idea_id=? ;", commentTableName);
 
     /**
-     * safely performs mSelectOne = mConnection.prepareStatement("SELECT * from
+     * safely performs mSelectOne = commentDB.mConnection.prepareStatement("SELECT * from
      * tblData WHERE id=?");
      * 
      * @return true if one row is selected, false otherwise.
      */
     private boolean init_mSelectOne() {
         try {
-            mSelectOne = mConnection.prepareStatement(SQL_SELECT_ONE);
+            mSelectOne = commentDB.mConnection.prepareStatement(SQL_SELECT_ONE);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mSelectOne");
             System.err.println("Using SQL: " + SQL_SELECT_ONE);
@@ -460,7 +452,7 @@ public class Comments {
             " FROM %s WHERE idea_id=?;", commentTableName);
 
     /**
-     * safely performs mSelectAll = mConnection.prepareStatement("SELECT id, idea
+     * safely performs mSelectAll = commentDB.mConnection.prepareStatement("SELECT id, idea
      * FROM tblData");
      * 
      * @return true if all rows can be selected, false otherwise.
@@ -468,7 +460,7 @@ public class Comments {
     private boolean init_mSelectComments() {
         // return true on success, false otherwise
         try {
-            mSelectComments = mConnection.prepareStatement(SQL_SELECT_COMMENTS);
+            mSelectComments = commentDB.mConnection.prepareStatement(SQL_SELECT_COMMENTS);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mSelectAll");
             System.err.println("Using SQL: " + SQL_SELECT_COMMENTS);

@@ -1,6 +1,5 @@
 package edu.lehigh.cse216.team24.backend;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,23 +16,16 @@ public class Ideas {
     // everywhere
     private static String ideaTableName = "IdeaTable";
 
-    /**
-     * Connection to db. An open connection if non-null, null otherwise. And
-     * database object which encloses the new connection passed from Database class
-     */
-    private Connection mConnection;
     private Database ideaDB;
 
     // Parameterized constructor allowing us to pass in a userTableName
     public Ideas(String n) {
-        ideaDB = Database.getDatabase();
-        mConnection = ideaDB.mConnection;
+        ideaDB = Buzz.db;
         ideaTableName = n;
     }
 
     public Ideas() {
-        ideaDB = Database.getDatabase();
-        mConnection = ideaDB.mConnection;
+        ideaDB = Buzz.db;
     }
 
     /**
@@ -57,13 +49,13 @@ public class Ideas {
 
     /**
      * safely performs mCreateTable =
-     * mConnection.prepareStatement(SQL_CREATE_TABLE);
+     * ideaDB.mConnection.prepareStatement(SQL_CREATE_TABLE);
      * 
      * @return true if table is created, false otherwise.
      */
     private boolean init_mCreateTable() {
         try {
-            mCreateTable = mConnection.prepareStatement(SQL_CREATE_TABLE);
+            mCreateTable = ideaDB.mConnection.prepareStatement(SQL_CREATE_TABLE);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mCreateTable");
             System.err.println("Using SQL: " + SQL_CREATE_TABLE);
@@ -96,14 +88,14 @@ public class Ideas {
     private static final String SQL_DROP_TABLE = String.format("DROP TABLE IF EXISTS %s CASCADE", ideaTableName);
 
     /**
-     * safely performs mDropTable = mConnection.prepareStatement("DROP TABLE
+     * safely performs mDropTable = ideaDB.mConnection.prepareStatement("DROP TABLE
      * tblData");
      * 
      * @return true if table is dropped, false otherwise.
      */
     private boolean init_mDropTable() {
         try {
-            mDropTable = mConnection.prepareStatement(SQL_DROP_TABLE);
+            mDropTable = ideaDB.mConnection.prepareStatement(SQL_DROP_TABLE);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mDropTable");
             System.err.println("Using SQL: " + SQL_DROP_TABLE);
@@ -142,7 +134,7 @@ public class Ideas {
                     " VALUES (default, ?, ?, default);", ideaTableName);;
 
     /**
-     * safely performs mInsertOne = mConnection.prepareStatement("INSERT INTO
+     * safely performs mInsertOne = ideaDB.mConnection.prepareStatement("INSERT INTO
      * tblData VALUES (default, ?, ?)");
      * 
      * @return true if item is inserted into DB, false otherwise.
@@ -154,7 +146,7 @@ public class Ideas {
                 mInsertOne.close();
             }
             // Create new prepared statement
-            mInsertOne = mConnection.prepareStatement(SQL_INSERT_ONE, Statement.RETURN_GENERATED_KEYS);
+            mInsertOne = ideaDB.mConnection.prepareStatement(SQL_INSERT_ONE, Statement.RETURN_GENERATED_KEYS);
             return true;
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mInsertOne");
@@ -240,7 +232,7 @@ public class Ideas {
     private boolean init_mUpdateStatus() {
         // return true on success, false otherwise
         try {
-            mUpdateStatus = mConnection.prepareStatement(SQL_UPDATE_STATUS);
+            mUpdateStatus = ideaDB.mConnection.prepareStatement(SQL_UPDATE_STATUS);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mUpdateStatus");
             System.err.println("Using SQL: " + SQL_UPDATE_STATUS);
@@ -318,7 +310,7 @@ public class Ideas {
     private boolean init_mAddLink() {
         // return true on success, false otherwise
         try {
-            mAddLink = mConnection.prepareStatement(SQL_ADD_LINK);
+            mAddLink = ideaDB.mConnection.prepareStatement(SQL_ADD_LINK);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mAddLink");
             System.err.println("Using SQL: " + SQL_ADD_LINK);
@@ -389,7 +381,7 @@ public class Ideas {
             " FROM %s;", ideaTableName);
 
     /**
-     * safely performs mSelectAllIdeas = mConnection.prepareStatement("SELECT id,
+     * safely performs mSelectAllIdeas = ideaDB.mConnection.prepareStatement("SELECT id,
      * idea
      * FROM tblData");
      * 
@@ -398,7 +390,7 @@ public class Ideas {
     private boolean init_mSelectAll() {
         // return true on success, false otherwise
         try {
-            mSelectAllIdeas = mConnection.prepareStatement(SQL_SELECT_IDEAS);
+            mSelectAllIdeas = ideaDB.mConnection.prepareStatement(SQL_SELECT_IDEAS);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mSelectAllIdeas");
             System.err.println("Using SQL: " + SQL_SELECT_IDEAS);
@@ -469,14 +461,14 @@ public class Ideas {
             " WHERE idea_id=? ;", ideaTableName);
 
     /**
-     * safely performs mSelectOne = mConnection.prepareStatement("SELECT * from
+     * safely performs mSelectOne = ideaDB.mConnection.prepareStatement("SELECT * from
      * tblData WHERE id=?");
      * 
      * @return true if one row is selected, false otherwise.
      */
     private boolean init_mSelectOne() {
         try {
-            mSelectOne = mConnection.prepareStatement(SQL_SELECT_ONE);
+            mSelectOne = ideaDB.mConnection.prepareStatement(SQL_SELECT_ONE);
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement: mSelectOne");
             System.err.println("Using SQL: " + SQL_SELECT_ONE);

@@ -34,7 +34,7 @@ public class Buzz {
     private static CommentMedia commentMediaDB;
 
     // public connection (to check in app) and database
-    public Database db;
+    public static Database db;
 
     public Buzz() {
         // database object

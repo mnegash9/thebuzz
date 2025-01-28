@@ -315,8 +315,8 @@ public class App {
         app.post("/login", ctx -> {
             ctx.contentType("application/json");
             StructuredResponse resp;
-            if (bz.db == null || !bz.db.mConnection.isValid(0)) {
-                bz.db = Database.getDatabase();
+            if (Buzz.db == null || !Buzz.db.mConnection.isValid(0)) {
+                Buzz.db = Database.getDatabase();
             }
             try {
                 // Parse request body
