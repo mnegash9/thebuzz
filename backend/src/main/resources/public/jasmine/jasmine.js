@@ -1,6 +1,6 @@
 /*
 Copyright (c) 2008-2019 Pivotal Labs
-Copyright (c) 2008-2024 The Jasmine developers
+Copyright (c) 2008-2025 The Jasmine developers
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -21,6 +21,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
+
 // eslint-disable-next-line no-unused-vars,no-var
 var getJasmineRequireObj = (function(jasmineGlobal) {
   let jasmineRequire;
@@ -150,6 +151,7 @@ getJasmineRequireObj().requireMatchers = function(jRequire, j$) {
       'toBeTrue',
       'toBeTruthy',
       'toBeUndefined',
+      'toBeNullish',
       'toContain',
       'toEqual',
       'toHaveSize',
@@ -159,7 +161,9 @@ getJasmineRequireObj().requireMatchers = function(jRequire, j$) {
       'toHaveBeenCalledTimes',
       'toHaveBeenCalledWith',
       'toHaveClass',
+      'toHaveClasses',
       'toHaveSpyInteractions',
+      'toHaveNoOtherSpyInteractions',
       'toMatch',
       'toThrow',
       'toThrowError',
@@ -788,11 +792,11 @@ getJasmineRequireObj().Spec = function(j$) {
     this.onStart = attrs.onStart || function() {};
     this.autoCleanClosures =
       attrs.autoCleanClosures === undefined ? true : !!attrs.autoCleanClosures;
-    this.getSpecName =
-      attrs.getSpecName ||
-      function() {
-        return '';
-      };
+
+    this.getPath = function() {
+      return attrs.getPath ? attrs.getPath(this) : [];
+    };
+
     this.onLateError = attrs.onLateError || function() {};
     this.catchingExceptions =
       attrs.catchingExceptions ||
@@ -915,6 +919,9 @@ getJasmineRequireObj().Spec = function(j$) {
      * @property {String} fullName - The full description including all ancestors of this spec.
      * @property {String|null} parentSuiteId - The ID of the suite containing this spec, or null if this spec is not in a describe().
      * @property {String} filename - The name of the file the spec was defined in.
+     * Note: The value may be incorrect if zone.js is installed or
+     * `it`/`fit`/`xit` have been replaced with versions that don't maintain the
+     *  same call stack height as the originals.
      * @property {ExpectationResult[]} failedExpectations - The list of expectations that failed during execution of this spec.
      * @property {ExpectationResult[]} passedExpectations - The list of expectations that passed during execution of this spec.
      * @property {ExpectationResult[]} deprecationWarnings - The list of deprecation warnings that occurred during execution this spec.
@@ -1018,7 +1025,7 @@ getJasmineRequireObj().Spec = function(j$) {
   };
 
   Spec.prototype.getFullName = function() {
-    return this.getSpecName(this);
+    return this.getPath().join(' ');
   };
 
   Spec.prototype.addDeprecationWarning = function(deprecation) {
@@ -1072,6 +1079,10 @@ getJasmineRequireObj().Spec = function(j$) {
    * @since 2.0.0
    */
   Object.defineProperty(Spec.prototype, 'metadata', {
+    // NOTE: Although most of jasmine-core only exposes these metadata objects,
+    // actual Spec instances are still passed to Configuration#specFilter. Until
+    // that is fixed, it's important to make sure that all metadata properties
+    // also exist in compatible form on the underlying Spec.
     get: function() {
       if (!this.metadata_) {
         this.metadata_ = {
@@ -1100,7 +1111,16 @@ getJasmineRequireObj().Spec = function(j$) {
            * @returns {string}
            * @since 2.0.0
            */
-          getFullName: this.getFullName.bind(this)
+          getFullName: this.getFullName.bind(this),
+
+          /**
+           * The full path of the spec, as an array of names.
+           * @name Spec#getPath
+           * @function
+           * @returns {Array.<string>}
+           * @since 5.7.0
+           */
+          getPath: this.getPath.bind(this)
         };
       }
 
@@ -1542,7 +1562,9 @@ getJasmineRequireObj().Env = function(j$) {
 
       // If we get here, all results have been reported and there's nothing we
       // can do except log the result and hope the user sees it.
+      // eslint-disable-next-line no-console
       console.error('Jasmine received a result after the suite finished:');
+      // eslint-disable-next-line no-console
       console.error(expectationResult);
     }
 
@@ -2690,7 +2712,8 @@ getJasmineRequireObj().buildExpectationResult = function(j$) {
      * in a future release. In many Jasmine configurations they are passed
      * through JSON serialization and deserialization, which is inherently
      * lossy. In such cases, the expected and actual values may be placeholders
-     * or approximations of the original objects.
+     * or approximations of the original objects. jasmine-browser-runner 3.0 and
+     * later omits them entirely.
      *
      * @typedef ExpectationResult
      * @property {String} matcherName - The name of the matcher that was executed for this expectation.
@@ -2780,7 +2803,7 @@ getJasmineRequireObj().CallTracker = function(j$) {
 
     this.track = function(context) {
       if (opts.cloneArgs) {
-        context.args = j$.util.cloneArgs(context.args);
+        context.args = opts.argsCloner(context.args);
       }
       calls.push(context);
     };
@@ -2888,13 +2911,19 @@ getJasmineRequireObj().CallTracker = function(j$) {
     };
 
     /**
-     * Set this spy to do a shallow clone of arguments passed to each invocation.
+     * Set this spy to do a clone of arguments passed to each invocation.
      * @name Spy#calls#saveArgumentsByValue
      * @since 2.5.0
+     * @param {Function} [argsCloner] A function to use to clone the arguments. Defaults to a shallow cloning function.
      * @function
      */
-    this.saveArgumentsByValue = function() {
+    this.saveArgumentsByValue = function(argsCloner = j$.util.cloneArgs) {
       opts.cloneArgs = true;
+      opts.argsCloner = argsCloner;
+    };
+
+    this.unverifiedCount = function() {
+      return calls.reduce((count, call) => count + (call.verified ? 0 : 1), 0);
     };
   }
 
@@ -3058,6 +3087,15 @@ getJasmineRequireObj().Clock = function() {
     let installed = false;
     let delayedFunctionScheduler;
     let timer;
+    // Tracks how the clock ticking behaves.
+    // By default, the clock only ticks when the user manually calls a tick method.
+    // There is also an 'auto' mode which will advance the clock automatically to
+    // to the next task. Once enabled, there is currently no mechanism for users
+    // to disable the auto ticking.
+    let tickMode = {
+      mode: 'manual',
+      counter: 0
+    };
 
     this.FakeTimeout = FakeTimeout;
 
@@ -3089,6 +3127,10 @@ getJasmineRequireObj().Clock = function() {
      * @function
      */
     this.uninstall = function() {
+      // Ensure auto ticking loop is aborted when clock is uninstalled
+      if (tickMode.mode === 'auto') {
+        tickMode = { mode: 'manual', counter: tickMode.counter + 1 };
+      }
       delayedFunctionScheduler = null;
       mockDate.uninstall();
       replace(global, realTimingFunctions);
@@ -3167,7 +3209,103 @@ getJasmineRequireObj().Clock = function() {
       }
     };
 
+    /**
+     * Updates the clock to automatically advance time.
+     *
+     * With this mode, the clock advances to the first scheduled timer and fires it, in a loop.
+     * Between each timer, it will also break the event loop, allowing any scheduled promise
+callbacks to execute _before_ running the next one.
+     *
+     * This mode allows tests to be authored in a way that does not need to be aware of the
+     * mock clock. Consequently, tests which have been authored without a mock clock installed
+     * can one with auto tick enabled without any other updates to the test logic.
+     *
+     * In many cases, this can greatly improve test execution speed because asynchronous tasks
+     * will execute as quickly as possible rather than waiting real time to complete.
+     *
+     * Furthermore, tests can be authored in a consistent manner. They can always be written in an asynchronous style
+     * rather than having `tick` sprinkled throughout the tests with mock time in order to manually
+     * advance the clock.
+     *
+     * When auto tick is enabled, `tick` can still be used to synchronously advance the clock if necessary.
+     * @name Clock#autoTick
+     * @function
+     * @since 5.7.0
+     */
+    this.autoTick = function() {
+      if (tickMode.mode === 'auto') {
+        return;
+      }
+
+      tickMode = { mode: 'auto', counter: tickMode.counter + 1 };
+      advanceUntilModeChanges();
+    };
+
     return this;
+
+    // Advances the Clock's time until the mode changes.
+    //
+    // The time is advanced asynchronously, giving microtasks and events a chance
+    // to run before each timer runs.
+    //
+    // @function
+    // @return {!Promise<undefined>}
+    async function advanceUntilModeChanges() {
+      if (!installed) {
+        throw new Error(
+          'Mock clock is not installed, use jasmine.clock().install()'
+        );
+      }
+      const { counter } = tickMode;
+
+      while (true) {
+        await newMacrotask();
+
+        if (
+          tickMode.counter !== counter ||
+          !installed ||
+          delayedFunctionScheduler === null
+        ) {
+          return;
+        }
+
+        if (!delayedFunctionScheduler.isEmpty()) {
+          delayedFunctionScheduler.runNextQueuedFunction(function(millis) {
+            mockDate.tick(millis);
+          });
+        }
+      }
+    }
+
+    // Waits until a new macro task.
+    //
+    // Used with autoTick(), which is meant to act when the test is waiting, we need
+    // to insert ourselves in the macro task queue.
+    //
+    // @return {!Promise<undefined>}
+    async function newMacrotask() {
+      if (NODE_JS) {
+        // setImmediate is generally faster than setTimeout in Node
+        // https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick#setimmediate-vs-settimeout
+        return new Promise(resolve => void setImmediate(resolve));
+      }
+
+      // MessageChannel ensures that setTimeout is not throttled to 4ms.
+      // https://developer.mozilla.org/en-US/docs/Web/API/setTimeout#reasons_for_delays_longer_than_specified
+      // https://stackblitz.com/edit/stackblitz-starters-qtlpcc
+      // Note: This trick does not work in Safari, which will still throttle the setTimeout
+      const channel = new MessageChannel();
+      await new Promise(resolve => {
+        channel.port1.onmessage = resolve;
+        channel.port2.postMessage(undefined);
+      });
+      channel.port1.close();
+      channel.port2.close();
+      // setTimeout ensures that we interleave with other setTimeouts.
+      await new Promise(resolve => {
+        realTimingFunctions.setTimeout.call(global, resolve);
+      });
+    }
 
     function originalTimingFunctionsIntact() {
       return (
@@ -3399,6 +3537,37 @@ getJasmineRequireObj().DelayedFunctionScheduler = function(j$) {
       }
     };
 
+    // Returns whether there are any scheduled functions.
+    // Returns true if there are any scheduled functions, otherwise false.
+    this.isEmpty = function() {
+      return this.scheduledFunctions_.length === 0;
+    };
+
+    // Runs the next timeout in the queue, advancing the clock.
+    this.runNextQueuedFunction = function(tickDate) {
+      if (this.scheduledLookup_.length === 0) {
+        return;
+      }
+
+      const newCurrentTime = this.scheduledLookup_[0];
+      if (newCurrentTime >= this.currentTime_) {
+        tickDate(newCurrentTime - this.currentTime_);
+        this.currentTime_ = newCurrentTime;
+      }
+
+      const funcsAtTime = this.scheduledFunctions_[this.currentTime_];
+      const fn = funcsAtTime.shift();
+      if (funcsAtTime.length === 0) {
+        delete this.scheduledFunctions_[this.currentTime_];
+        this.scheduledLookup_.splice(0, 1);
+      }
+
+      if (fn.recurring) {
+        this.reschedule_(fn);
+      }
+      fn.funcToCall.apply(null, fn.params || []);
+    };
+
     return this;
   }
 
@@ -3535,6 +3704,7 @@ getJasmineRequireObj().Deprecator = function(j$) {
 
   Deprecator.prototype.log_ = function(runnable, deprecation, options) {
     if (j$.isError_(deprecation)) {
+      // eslint-disable-next-line no-console
       console.error(deprecation);
       return;
     }
@@ -3557,6 +3727,7 @@ getJasmineRequireObj().Deprecator = function(j$) {
       context += '\n' + verboseNote;
     }
 
+    // eslint-disable-next-line no-console
     console.error('DEPRECATION: ' + deprecation + context);
   };
 
@@ -4332,7 +4503,9 @@ getJasmineRequireObj().toBePending = function(j$) {
     return {
       compare: function(actual) {
         if (!j$.isPromiseLike(actual)) {
-          throw new Error('Expected toBePending to be called on a promise.');
+          throw new Error(
+            `Expected toBePending to be called on a promise but was on a ${typeof actual}.`
+          );
         }
         const want = {};
         return Promise.race([actual, Promise.resolve(want)]).then(
@@ -4364,7 +4537,9 @@ getJasmineRequireObj().toBeRejected = function(j$) {
     return {
       compare: function(actual) {
         if (!j$.isPromiseLike(actual)) {
-          throw new Error('Expected toBeRejected to be called on a promise.');
+          throw new Error(
+            `Expected toBeRejected to be called on a promise but was on a ${typeof actual}.`
+          );
         }
         return actual.then(
           function() {
@@ -4397,7 +4572,7 @@ getJasmineRequireObj().toBeRejectedWith = function(j$) {
       compare: function(actualPromise, expectedValue) {
         if (!j$.isPromiseLike(actualPromise)) {
           throw new Error(
-            'Expected toBeRejectedWith to be called on a promise.'
+            `Expected toBeRejectedWith to be called on a promise but was on a ${typeof actualPromise}.`
           );
         }
 
@@ -4461,7 +4636,7 @@ getJasmineRequireObj().toBeRejectedWithError = function(j$) {
       compare: function(actualPromise, arg1, arg2) {
         if (!j$.isPromiseLike(actualPromise)) {
           throw new Error(
-            'Expected toBeRejectedWithError to be called on a promise.'
+            `Expected toBeRejectedWithError to be called on a promise but was on a ${typeof actualPromise}.`
           );
         }
 
@@ -4579,7 +4754,9 @@ getJasmineRequireObj().toBeResolved = function(j$) {
     return {
       compare: function(actual) {
         if (!j$.isPromiseLike(actual)) {
-          throw new Error('Expected toBeResolved to be called on a promise.');
+          throw new Error(
+            `Expected toBeResolved to be called on a promise but was on a ${typeof actual}.`
+          );
         }
 
         return actual.then(
@@ -4619,7 +4796,9 @@ getJasmineRequireObj().toBeResolvedTo = function(j$) {
     return {
       compare: function(actualPromise, expectedValue) {
         if (!j$.isPromiseLike(actualPromise)) {
-          throw new Error('Expected toBeResolvedTo to be called on a promise.');
+          throw new Error(
+            `Expected toBeResolvedTo to be called on a promise but was on a ${typeof actualPromise}.`
+          );
         }
 
         function prefix(passed) {
@@ -4704,7 +4883,10 @@ getJasmineRequireObj().DiffBuilder = function(j$) {
         );
 
         if (useCustom) {
-          messages.push(wrapPrettyPrinted(actualCustom, expectedCustom, path));
+          const prettyActual = actualCustom || this.prettyPrinter_(actual);
+          const prettyExpected =
+            expectedCustom || this.prettyPrinter_(expected);
+          messages.push(wrapPrettyPrinted(prettyActual, prettyExpected, path));
           return false; // don't recurse further
         }
 
@@ -5846,6 +6028,7 @@ getJasmineRequireObj().toBeInstanceOf = function(j$) {
         try {
           expectedMatcher = new j$.Any(expected);
           pass = expectedMatcher.asymmetricMatch(actual);
+          // eslint-disable-next-line no-unused-vars
         } catch (error) {
           throw new Error(
             usageError('Expected value is not a constructor function')
@@ -6008,6 +6191,28 @@ getJasmineRequireObj().toBeNull = function() {
   }
 
   return toBeNull;
+};
+
+getJasmineRequireObj().toBeNullish = function() {
+  /**
+   * {@link expect} the actual value to be `null` or `undefined`.
+   * @function
+   * @name matchers#toBeNullish
+   * @since 5.6.0
+   * @example
+   * expect(result).toBeNullish():
+   */
+  function toBeNullish() {
+    return {
+      compare: function(actual) {
+        return {
+          pass: null === actual || void 0 === actual
+        };
+      }
+    };
+  }
+
+  return toBeNullish;
 };
 
 getJasmineRequireObj().toBePositiveInfinity = function(j$) {
@@ -6199,6 +6404,8 @@ getJasmineRequireObj().toHaveBeenCalled = function(j$) {
 
         result.pass = actual.calls.any();
 
+        actual.calls.all().forEach(call => (call.verified = true));
+
         result.message = result.pass
           ? 'Expected spy ' + actual.and.identity + ' not to have been called.'
           : 'Expected spy ' + actual.and.identity + ' to have been called.';
@@ -6263,6 +6470,9 @@ getJasmineRequireObj().toHaveBeenCalledBefore = function(j$) {
         result.pass = latest1stSpyCall < first2ndSpyCall;
 
         if (result.pass) {
+          firstSpy.calls.mostRecent().verified = true;
+          latterSpy.calls.first().verified = true;
+
           result.message =
             'Expected spy ' +
             firstSpy.and.identity +
@@ -6319,7 +6529,7 @@ getJasmineRequireObj().toHaveBeenCalledOnceWith = function(j$) {
    * @example
    * expect(mySpy).toHaveBeenCalledOnceWith('foo', 'bar', 2);
    */
-  function toHaveBeenCalledOnceWith(util) {
+  function toHaveBeenCalledOnceWith(matchersUtil) {
     return {
       compare: function() {
         const args = Array.prototype.slice.call(arguments, 0),
@@ -6328,20 +6538,29 @@ getJasmineRequireObj().toHaveBeenCalledOnceWith = function(j$) {
 
         if (!j$.isSpy(actual)) {
           throw new Error(
-            getErrorMsg('Expected a spy, but got ' + util.pp(actual) + '.')
+            getErrorMsg(
+              'Expected a spy, but got ' + matchersUtil.pp(actual) + '.'
+            )
           );
         }
 
         const prettyPrintedCalls = actual.calls
           .allArgs()
           .map(function(argsForCall) {
-            return '  ' + util.pp(argsForCall);
+            return '  ' + matchersUtil.pp(argsForCall);
           });
 
         if (
           actual.calls.count() === 1 &&
-          util.contains(actual.calls.allArgs(), expectedArgs)
+          matchersUtil.contains(actual.calls.allArgs(), expectedArgs)
         ) {
+          const firstIndex = actual.calls
+            .all()
+            .findIndex(call => matchersUtil.equals(call.args, expectedArgs));
+          if (firstIndex > -1) {
+            actual.calls.all()[firstIndex].verified = true;
+          }
+
           return {
             pass: true,
             message:
@@ -6349,7 +6568,7 @@ getJasmineRequireObj().toHaveBeenCalledOnceWith = function(j$) {
               actual.and.identity +
               ' to have been called 0 times, multiple times, or once, but with arguments different from:\n' +
               '  ' +
-              util.pp(expectedArgs) +
+              matchersUtil.pp(expectedArgs) +
               '\n' +
               'But the actual call was:\n' +
               prettyPrintedCalls.join(',\n') +
@@ -6360,7 +6579,7 @@ getJasmineRequireObj().toHaveBeenCalledOnceWith = function(j$) {
         function getDiffs() {
           return actual.calls.allArgs().map(function(argsForCall, callIx) {
             const diffBuilder = new j$.DiffBuilder();
-            util.equals(argsForCall, expectedArgs, diffBuilder);
+            matchersUtil.equals(argsForCall, expectedArgs, diffBuilder);
             return diffBuilder.getMessage();
           });
         }
@@ -6393,7 +6612,7 @@ getJasmineRequireObj().toHaveBeenCalledOnceWith = function(j$) {
             actual.and.identity +
             ' to have been called only once, and with given args:\n' +
             '  ' +
-            util.pp(expectedArgs) +
+            matchersUtil.pp(expectedArgs) +
             '\n' +
             butString()
         };
@@ -6442,23 +6661,35 @@ getJasmineRequireObj().toHaveBeenCalledTimes = function(j$) {
         }
 
         actual = args[0];
-        const calls = actual.calls.count();
+
+        const callsCount = actual.calls.count();
         const timesMessage = expected === 1 ? 'once' : expected + ' times';
-        result.pass = calls === expected;
+
+        result.pass = callsCount === expected;
+
+        if (result.pass) {
+          const allCalls = actual.calls.all();
+          const max = Math.min(expected, callsCount);
+
+          for (let i = 0; i < max; i++) {
+            allCalls[i].verified = true;
+          }
+        }
+
         result.message = result.pass
           ? 'Expected spy ' +
             actual.and.identity +
             ' not to have been called ' +
             timesMessage +
             '. It was called ' +
-            calls +
+            callsCount +
             ' times.'
           : 'Expected spy ' +
             actual.and.identity +
             ' to have been called ' +
             timesMessage +
             '. It was called ' +
-            calls +
+            callsCount +
             ' times.';
         return result;
       }
@@ -6514,6 +6745,11 @@ getJasmineRequireObj().toHaveBeenCalledWith = function(j$) {
         }
 
         if (matchersUtil.contains(actual.calls.allArgs(), expectedArgs)) {
+          actual.calls
+            .all()
+            .filter(call => matchersUtil.equals(call.args, expectedArgs))
+            .forEach(call => (call.verified = true));
+
           result.pass = true;
           result.message = function() {
             return (
@@ -6603,6 +6839,127 @@ getJasmineRequireObj().toHaveClass = function(j$) {
   }
 
   return toHaveClass;
+};
+
+getJasmineRequireObj().toHaveClasses = function(j$) {
+  /**
+   * {@link expect} the actual value to be a DOM element that has the expected classes
+   * @function
+   * @name matchers#toHaveClasses
+   * @since 5.6.0
+   * @param {Object} expected - The class names to test for
+   * @example
+   * const el = document.createElement('div');
+   * el.className = 'foo bar baz';
+   * expect(el).toHaveClasses(['bar', 'baz']);
+   */
+  function toHaveClasses(matchersUtil) {
+    return {
+      compare: function(actual, expected) {
+        if (!isElement(actual)) {
+          throw new Error(matchersUtil.pp(actual) + ' is not a DOM element');
+        }
+
+        return {
+          pass: expected.every(e => actual.classList.contains(e))
+        };
+      }
+    };
+  }
+
+  function isElement(maybeEl) {
+    return (
+      maybeEl && maybeEl.classList && j$.isFunction_(maybeEl.classList.contains)
+    );
+  }
+
+  return toHaveClasses;
+};
+
+getJasmineRequireObj().toHaveNoOtherSpyInteractions = function(j$) {
+  const getErrorMsg = j$.formatErrorMsg(
+    '<toHaveNoOtherSpyInteractions>',
+    'expect(<spyObj>).toHaveNoOtherSpyInteractions()'
+  );
+
+  /**
+   * {@link expect} the actual (a {@link SpyObj}) spies to have not been called except interactions which was already tracked with `toHaveBeenCalled`.
+   * @function
+   * @name matchers#toHaveNoOtherSpyInteractions
+   * @example
+   * expect(mySpyObj).toHaveNoOtherSpyInteractions();
+   * expect(mySpyObj).not.toHaveNoOtherSpyInteractions();
+   */
+  function toHaveNoOtherSpyInteractions(matchersUtil) {
+    return {
+      compare: function(actual) {
+        const result = {};
+
+        if (!j$.isObject_(actual)) {
+          throw new Error(
+            getErrorMsg('Expected an object, but got ' + typeof actual + '.')
+          );
+        }
+
+        if (arguments.length > 1) {
+          throw new Error(getErrorMsg('Does not take arguments'));
+        }
+
+        result.pass = true;
+        let hasSpy = false;
+        const unexpectedCalls = [];
+
+        for (const spy of Object.values(actual)) {
+          if (!j$.isSpy(spy)) {
+            continue;
+          }
+
+          hasSpy = true;
+
+          const unverifiedCalls = spy.calls
+            .all()
+            .filter(call => !call.verified);
+
+          if (unverifiedCalls.length > 0) {
+            result.pass = false;
+          }
+
+          unverifiedCalls.forEach(unverifiedCall => {
+            unexpectedCalls.push([
+              spy.and.identity,
+              matchersUtil.pp(unverifiedCall.args)
+            ]);
+          });
+        }
+
+        if (!hasSpy) {
+          throw new Error(
+            getErrorMsg(
+              'Expected an object with spies, but object has no spies.'
+            )
+          );
+        }
+
+        if (result.pass) {
+          result.message =
+            "Expected a spy object to have other spy interactions but it didn't.";
+        } else {
+          const ppUnexpectedCalls = unexpectedCalls
+            .map(([spyName, args]) => `  ${spyName} called with ${args}`)
+            .join(',\n');
+
+          result.message =
+            'Expected a spy object to have no other spy interactions, but it had the following calls:\n' +
+            ppUnexpectedCalls +
+            '.';
+        }
+
+        return result;
+      }
+    };
+  }
+
+  return toHaveNoOtherSpyInteractions;
 };
 
 getJasmineRequireObj().toHaveSize = function(j$) {
@@ -7406,7 +7763,11 @@ getJasmineRequireObj().makePrettyPrinter = function(j$) {
         } else if (value instanceof RegExp) {
           this.emitScalar(value.toString());
         } else if (typeof value === 'function') {
-          this.emitScalar('Function');
+          if (value.name) {
+            this.emitScalar(`Function '${value.name}'`);
+          } else {
+            this.emitScalar('Function');
+          }
         } else if (j$.isDomNode(value)) {
           if (value.tagName) {
             this.emitDomElement(value);
@@ -7429,6 +7790,7 @@ getJasmineRequireObj().makePrettyPrinter = function(j$) {
         ) {
           try {
             this.emitScalar(value.toString());
+            // eslint-disable-next-line no-unused-vars
           } catch (e) {
             this.emitScalar('has-invalid-toString-method');
           }
@@ -7675,6 +8037,7 @@ getJasmineRequireObj().makePrettyPrinter = function(j$) {
         value.toString !== Object.prototype.toString &&
         value.toString() !== Object.prototype.toString.call(value)
       );
+      // eslint-disable-next-line no-unused-vars
     } catch (e) {
       // The custom toString() threw.
       return true;
@@ -7753,6 +8116,7 @@ getJasmineRequireObj().QueueRunner = function(j$) {
   }
 
   function fallbackOnMultipleDone() {
+    // eslint-disable-next-line no-console
     console.error(
       new Error(
         "An asynchronous function called its 'done' " +
@@ -7866,6 +8230,7 @@ getJasmineRequireObj().QueueRunner = function(j$) {
           // Any error we catch here is probably due to a bug in Jasmine,
           // and it's not likely to end up anywhere useful if we let it
           // propagate. Log it so it can at least show up when debugging.
+          // eslint-disable-next-line no-console
           console.error(error);
         }
       }
@@ -9183,7 +9548,8 @@ getJasmineRequireObj().Spy = function(j$) {
       const callData = {
         object: context,
         invocationOrder: nextOrder(),
-        args: Array.prototype.slice.apply(args)
+        args: Array.prototype.slice.apply(args),
+        verified: false
       };
 
       callTracker.track(callData);
@@ -9317,7 +9683,7 @@ getJasmineRequireObj().Spy = function(j$) {
             "Spy '" +
               strategyArgs.name +
               "' received a call with arguments " +
-              j$.basicPrettyPrinter_(Array.prototype.slice.call(args)) +
+              matchersUtil.pp(Array.prototype.slice.call(args)) +
               ' but all configured strategies specify other arguments.'
           );
         } else {
@@ -9704,6 +10070,7 @@ getJasmineRequireObj().SpyRegistry = function(j$) {
     let value;
     try {
       value = obj[prop];
+      // eslint-disable-next-line no-unused-vars
     } catch (e) {
       return false;
     }
@@ -10136,6 +10503,9 @@ getJasmineRequireObj().Suite = function(j$) {
      * @property {String} fullName - The full description including all ancestors of this suite.
      * @property {String|null} parentSuiteId - The ID of the suite containing this suite, or null if this is not in another describe().
      * @property {String} filename - The name of the file the suite was defined in.
+     * Note: The value may be incorrect if zone.js is installed or
+     * `describe`/`fdescribe`/`xdescribe` have been replaced with versions that
+     * don't maintain the same call stack height as the originals.
      * @property {ExpectationResult[]} failedExpectations - The list of expectations that failed in an {@link afterAll} for this suite.
      * @property {ExpectationResult[]} deprecationWarnings - The list of deprecation warnings that occurred on this suite.
      * @property {String} status - Once the suite has completed, this string represents the pass/fail status of this suite.
@@ -10618,9 +10988,7 @@ getJasmineRequireObj().SuiteBuilder = function(j$) {
         resultCallback: (result, next) => {
           this.specResultCallback_(spec, result, next);
         },
-        getSpecName: function(spec) {
-          return getSpecName(spec, suite);
-        },
+        getPath: spec => this.getSpecPath_(spec, suite),
         onStart: (spec, next) => this.specStarted_(spec, suite, next),
         description: description,
         userContext: function() {
@@ -10635,6 +11003,17 @@ getJasmineRequireObj().SuiteBuilder = function(j$) {
         timer: new j$.Timer()
       });
       return spec;
+    }
+
+    getSpecPath_(spec, suite) {
+      const path = [spec.description];
+
+      while (suite && suite !== this.topSuite) {
+        path.unshift(suite.description);
+        suite = suite.parentSuite;
+      }
+
+      return path;
     }
 
     unfocusAncestor_() {
@@ -10698,16 +11077,6 @@ getJasmineRequireObj().SuiteBuilder = function(j$) {
         afters: afters
       };
     };
-  }
-
-  function getSpecName(spec, suite) {
-    const fullName = [spec.description],
-      suiteFullName = suite.getFullName();
-
-    if (suiteFullName !== '') {
-      fullName.unshift(suiteFullName);
-    }
-    return fullName.join(' ');
   }
 
   return SuiteBuilder;
@@ -11041,5 +11410,5 @@ getJasmineRequireObj().UserContext = function(j$) {
 };
 
 getJasmineRequireObj().version = function() {
-  return '5.5.0';
+  return '5.8.0';
 };
